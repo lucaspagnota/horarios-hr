@@ -1,0 +1,34 @@
+# Horários HR
+
+App das aulas de música do Lucas: grade da semana, fichas dos alunos (música atual, escalas, nível, observações, diário de aulas), programa do recital de julho e outubro, e reposições.
+
+- **Site:** https://lucaspagnota.github.io/horarios-hr/ (abre no computador e no celular; no Android dá para instalar pelo menu do navegador)
+- **APK para Android:** https://github.com/lucaspagnota/horarios-hr/releases/download/apk/HorariosHR.apk
+
+## Como funciona
+
+| Pasta / arquivo | O que é |
+|---|---|
+| `app/horarios-hr.html` | O app inteiro (HTML, CSS e JavaScript num arquivo só). É o mesmo arquivo publicado dentro do Claude. |
+| `scripts/build.py` | Monta o site em `www/`: cabeçalho, ícones, manifest, service worker e as configurações do Firebase. |
+| `web/` | Manifest do app instalável, service worker e ícones. |
+| `assets/` | Ícone e tela de abertura usados no APK. |
+| `firebase/firestore.rules` | Regras do banco: só a conta do Lucas lê e grava. |
+| `.github/workflows/` | `site.yml` publica o site no GitHub Pages; `apk.yml` gera o APK e atualiza a versão "apk". |
+
+A cada `push` na `main`, o GitHub publica o site e gera um APK novo.
+
+## Dados
+
+- Com o arquivo `firebase.config.json` na raiz, o app pede login (e-mail e senha do Firebase Authentication) e guarda tudo no Cloud Firestore, sincronizado entre computador e celular.
+- Sem ele, o app guarda os dados só no aparelho.
+- Em **Ajustes** dá para exportar e importar um backup `.json` e baixar a planilha `.xlsx`.
+- Nenhum dado de aluno fica neste repositório.
+
+## Rodar no computador
+
+```bash
+npm install
+python3 scripts/build.py
+cd www && python3 -m http.server 8000
+```

@@ -1,0 +1,1444 @@
+<title>Horários HR</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="apple-mobile-web-app-title" content="Horários HR">
+<meta name="theme-color" content="#F4F5F9">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Onest:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: app shell — sidebar on desktop, bottom tab bar on phone; one work area that swaps views (grade, semana, alunos, recital, reposições). Location colors carry over from Lucas's original spreadsheet. */
+:root{
+  --bg:#F4F5F9; --surface:#FFFFFF; --surface-2:#ECEEF4; --line:#DCE0EA; --line-2:#C9CEDB;
+  --ink:#131722; --ink-2:#555D73; --ink-3:#8990A4;
+  --primary:#131722; --on-primary:#FFFFFF;
+  --sm:#DD7428; --bat:#2E68E6; --cor:#17966A; --brass:#B9801F; --danger:#D0453B;
+  --shadow:0 1px 2px rgba(19,23,34,.06),0 8px 24px -12px rgba(19,23,34,.18);
+  --f-display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --f-body:"Onest","Segoe UI",system-ui,-apple-system,sans-serif;
+  --r:14px; --r-sm:9px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E1017; --surface:#161922; --surface-2:#1E222E; --line:#292E3C; --line-2:#363C4D;
+  --ink:#ECEEF5; --ink-2:#A6ACBE; --ink-3:#737A90;
+  --primary:#ECEEF5; --on-primary:#10131B;
+  --sm:#F29350; --bat:#6E97FF; --cor:#3CC58F; --brass:#E2B354; --danger:#F06A60;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -14px rgba(0,0,0,.6);
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0E1017; --surface:#161922; --surface-2:#1E222E; --line:#292E3C; --line-2:#363C4D;
+  --ink:#ECEEF5; --ink-2:#A6ACBE; --ink-3:#737A90;
+  --primary:#ECEEF5; --on-primary:#10131B;
+  --sm:#F29350; --bat:#6E97FF; --cor:#3CC58F; --brass:#E2B354; --danger:#F06A60;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 10px 30px -14px rgba(0,0,0,.6);
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--bat);outline-offset:2px;border-radius:6px}
+.num{font-variant-numeric:tabular-nums}
+
+/* ---------- shell ---------- */
+.shell{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:100%}
+.side{position:sticky;top:0;height:100vh;padding:22px 14px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:22px;background:var(--bg)}
+.brand{display:flex;align-items:center;gap:10px;padding:0 8px}
+.brand-mark{width:38px;height:38px;border-radius:11px;background:var(--primary);color:var(--on-primary);display:grid;place-items:center;flex:none}
+.brand-name{font-family:var(--f-display);font-weight:800;font-size:19px;letter-spacing:-.02em;line-height:1}
+.brand-sub{font-size:12px;color:var(--ink-3);margin-top:3px}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav button{display:flex;align-items:center;gap:11px;padding:10px 12px;border:0;background:none;border-radius:10px;color:var(--ink-2);font-weight:500;text-align:left}
+.nav button:hover{background:var(--surface-2);color:var(--ink)}
+.nav button[aria-current="page"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow);font-weight:600}
+.nav .badge{margin-left:auto}
+.nav svg{width:19px;height:19px;flex:none}
+.side-foot{margin-top:auto;display:flex;flex-direction:column;gap:8px;padding:0 4px}
+.legend{display:flex;flex-direction:column;gap:7px;padding:12px;border:1px solid var(--line);border-radius:12px;font-size:13px;color:var(--ink-2)}
+.legend .eyebrow{margin-bottom:2px}
+.lg{display:flex;align-items:center;gap:8px}
+.dot{width:9px;height:9px;border-radius:50%;flex:none;background:var(--c)}
+
+.main{min-width:0;padding-block:26px 60px;padding-left:max(28px,env(safe-area-inset-left,0px));padding-right:max(28px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1240px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+
+.tabbar{display:none}
+
+/* ---------- headings ---------- */
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.head.compact{align-items:center;gap:12px}
+.wrap.grade-view{gap:14px}
+.eyebrow{font-size:11.5px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
+h1{font-family:var(--f-display);font-weight:800;font-size:clamp(22px,2.4vw,28px);letter-spacing:-.025em;line-height:1.05;margin:2px 0 0;text-wrap:balance}
+h2{font-family:var(--f-display);font-weight:700;font-size:20px;letter-spacing:-.015em;margin:0;text-wrap:balance}
+.sub{color:var(--ink-2);margin:4px 0 0;font-size:13.5px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* ---------- buttons, inputs ---------- */
+.btn{display:inline-flex;align-items:center;gap:7px;height:38px;padding:0 14px;border-radius:10px;border:1px solid var(--line-2);background:var(--surface);font-weight:600;font-size:14px;white-space:nowrap}
+.btn:hover{border-color:var(--ink-3)}
+.btn svg{width:17px;height:17px}
+.btn.primary{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+.btn.primary:hover{opacity:.9}
+.btn.ghost{background:none;border-color:transparent;color:var(--ink-2)}
+.btn.ghost:hover{background:var(--surface-2);color:var(--ink)}
+.btn.danger{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 40%,var(--line))}
+.btn.danger.armed{background:var(--danger);color:#fff;border-color:var(--danger)}
+.btn.sm{height:32px;padding:0 10px;font-size:13px;border-radius:8px}
+.btn.icon{width:38px;padding:0;justify-content:center}
+.btn.sm.icon{width:32px}
+.btn[disabled]{opacity:.45;cursor:default}
+
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.field>label,.lbl{font-size:12.5px;font-weight:600;color:var(--ink-2)}
+.input,select.input,textarea.input{width:100%;height:40px;padding:0 12px;border-radius:10px;border:1px solid var(--line-2);background:var(--surface);outline:none}
+textarea.input{height:auto;min-height:84px;padding:10px 12px;resize:vertical;line-height:1.45}
+.input:focus{border-color:var(--bat);box-shadow:0 0 0 3px color-mix(in srgb,var(--bat) 18%,transparent)}
+.search{position:relative;flex:1 1 220px;max-width:340px}
+.search svg{position:absolute;left:12px;top:50%;translate:0 -50%;width:17px;height:17px;color:var(--ink-3)}
+.search .input{padding-left:38px}
+
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:7px;height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--line-2);background:var(--surface);font-size:13px;font-weight:500;color:var(--ink-2)}
+.chip[aria-pressed="true"]{background:var(--primary);border-color:var(--primary);color:var(--on-primary)}
+.chip .dot{width:8px;height:8px}
+
+.seg{display:inline-flex;padding:3px;border-radius:11px;background:var(--surface-2);gap:2px}
+.seg button{border:0;background:none;height:32px;padding:0 14px;border-radius:8px;font-weight:600;font-size:13.5px;color:var(--ink-2)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+
+.badge{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--surface-2);font-size:11.5px;font-weight:700;color:var(--ink-2)}
+.badge.warn{background:color-mix(in srgb,var(--danger) 16%,var(--surface));color:var(--danger)}
+.pill{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:999px;font-size:11.5px;font-weight:600;background:color-mix(in srgb,var(--c,var(--ink-3)) 14%,var(--surface));color:color-mix(in srgb,var(--c,var(--ink-3)) 82%,var(--ink));white-space:nowrap}
+.pill svg{width:12px;height:12px}
+
+/* ---------- stats ---------- */
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.stat{padding:14px 16px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line);display:flex;flex-direction:column;gap:2px;min-width:0}
+.stat b{font-family:var(--f-display);font-size:24px;font-weight:700;letter-spacing:-.02em;line-height:1.1}
+.stat span{font-size:13px;color:var(--ink-2)}
+
+/* ---------- grade (overview) ---------- */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);min-width:0}
+.grid-scroll{overflow-x:auto;border-radius:18px}
+.grade{display:grid;grid-template-columns:56px repeat(6,minmax(0,1fr));grid-template-rows:38px repeat(var(--rows),minmax(42px,1fr));height:clamp(calc(38px + var(--rows) * 42px),calc(100dvh - 150px),calc(38px + var(--rows) * 64px))}
+.gh{padding:0 10px;font-weight:700;font-size:13px;letter-spacing:.02em;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:6px;background:var(--surface);min-width:0}
+.gh .ds{display:none}
+.gh small{font-weight:500;color:var(--ink-3)}
+.gh.today{color:var(--bat)}
+.gt{padding:6px 6px 0 10px;font-size:12px;color:var(--ink-3);font-weight:600;border-right:1px solid var(--line);border-top:1px solid var(--line);background:var(--surface)}
+.gc{min-height:0;min-width:0;padding:3px;border-top:1px solid var(--line);border-right:1px solid var(--line);display:flex;flex-direction:column;gap:3px;position:relative}
+.gc.off{background:color-mix(in srgb,var(--surface-2) 60%,var(--surface))}
+.gc.drop-ok{background:color-mix(in srgb,var(--bat) 10%,var(--surface));box-shadow:inset 0 0 0 2px var(--bat)}
+.gc.drop-no{box-shadow:inset 0 0 0 2px var(--danger)}
+.gc:nth-child(7n){border-right:0}
+.gc.lunch{background:repeating-linear-gradient(135deg,transparent 0 7px,var(--surface-2) 7px 8px)}
+.gc.lunch::after{content:"Almoço";position:absolute;inset:0;display:grid;place-items:center;font-size:11.5px;font-weight:600;color:var(--ink-3);letter-spacing:.06em;text-transform:uppercase}
+.gc .add{position:absolute;inset:3px;border:1.5px dashed transparent;border-radius:10px;background:none;color:transparent;display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:600;white-space:nowrap}
+body.dragging .gc .add{display:none}
+.gc:hover .add{border-color:var(--line-2);color:var(--ink-3)}
+.gc.lunch:hover::after{opacity:0}
+
+.lesson{--c:var(--ink-3);position:relative;z-index:1;flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:0;width:100%;text-align:left;padding:3px 8px 3px 12px;border-radius:9px;border:0;background:color-mix(in srgb,var(--c) 12%,var(--surface));color:var(--ink);overflow:hidden;cursor:grab;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;touch-action:manipulation}
+.lesson.lifting{opacity:.3}
+.drag-ghost{position:fixed;left:0;top:0;z-index:70;pointer-events:none;margin:0;rotate:-2deg;scale:1.04;box-shadow:0 14px 30px -10px rgba(10,12,20,.45);opacity:.96;cursor:grabbing}
+body.dragging,body.dragging *{cursor:grabbing!important;-webkit-user-select:none;user-select:none}
+.lesson::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c)}
+.lesson:hover{background:color-mix(in srgb,var(--c) 18%,var(--surface))}
+.lesson .n{font-weight:650;font-weight:600;font-size:15.5px;line-height:1.2;display:flex;gap:6px;align-items:center;width:100%;min-width:0;letter-spacing:-.01em}
+.lesson .n span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lesson .i{font-size:11.5px;line-height:1.25;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.lesson .marks{display:flex;gap:4px;margin-left:auto;flex:none}
+.mk{width:16px;height:16px;border-radius:5px;display:grid;place-items:center;background:var(--surface);color:var(--brass)}
+.mk svg{width:11px;height:11px}
+.mk.rep{color:var(--danger)}
+.dim{opacity:.28}
+
+/* ---------- week ---------- */
+.weeknav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.weeknav .range{font-family:var(--f-display);font-weight:700;font-size:18px;letter-spacing:-.01em;min-width:190px;text-align:center}
+.week{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+.day{display:flex;flex-direction:column;gap:8px;min-width:0}
+.day-h{display:flex;align-items:baseline;justify-content:space-between;padding:4px 4px 6px;border-bottom:2px solid var(--line)}
+.day-h b{font-family:var(--f-display);font-size:15px;font-weight:700}
+.day-h .d{font-size:26px;font-family:var(--f-display);font-weight:700;letter-spacing:-.03em;line-height:1}
+.day-h .cnt{font-size:12px;color:var(--ink-3)}
+.day.today .day-h{border-color:var(--bat)}
+.day.today .day-h .d{color:var(--bat)}
+.wcard{--c:var(--ink-3);position:relative;display:flex;flex-direction:column;gap:6px;padding:10px 11px 10px 13px;border-radius:12px;background:var(--surface);border:1px solid var(--line);overflow:hidden}
+.wcard::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c)}
+.wcard .top{display:flex;justify-content:space-between;align-items:baseline;gap:6px}
+.wcard .t{font-size:12.5px;font-weight:700;color:var(--ink-2)}
+.wcard .nm{font-weight:600;line-height:1.25;border:0;background:none;padding:0;text-align:left;min-width:0;overflow-wrap:anywhere}
+.wcard .nm:hover{text-decoration:underline;text-underline-offset:3px}
+.wcard .meta{font-size:12.5px;color:var(--ink-2);overflow-wrap:anywhere}
+.wcard .row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.wcard.missed{background:color-mix(in srgb,var(--danger) 6%,var(--surface));border-style:dashed}
+.wcard.missed .nm{text-decoration:line-through;text-decoration-color:var(--danger)}
+.wcard.makeup{border-style:dashed;border-color:var(--c)}
+.wcard .fb{height:26px;padding:0 9px;border-radius:7px;border:1px solid var(--line-2);background:none;font-size:12px;font-weight:600;color:var(--ink-2)}
+.wcard .fb:hover{border-color:var(--danger);color:var(--danger)}
+.recital-day{padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--brass) 14%,var(--surface));color:color-mix(in srgb,var(--brass) 70%,var(--ink));font-weight:600;font-size:13px;display:flex;gap:7px;align-items:center}
+.recital-day svg{width:16px;height:16px}
+.empty-day{padding:14px 8px;text-align:center;font-size:12.5px;color:var(--ink-3);border:1px dashed var(--line);border-radius:12px}
+.daypick{display:none}
+
+/* ---------- alunos ---------- */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.scard{--c:var(--ink-3);display:flex;flex-direction:column;gap:12px;padding:16px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line);text-align:left;min-width:0;transition:border-color .15s,box-shadow .15s}
+.scard:hover{border-color:var(--line-2);box-shadow:var(--shadow)}
+.scard .top{display:flex;gap:12px;align-items:center;min-width:0}
+.av{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;flex:none;font-family:var(--f-display);font-weight:700;font-size:17px;background:color-mix(in srgb,var(--c) 16%,var(--surface));color:color-mix(in srgb,var(--c) 85%,var(--ink))}
+.scard .nm{font-weight:650;font-weight:600;font-size:16px;line-height:1.2;overflow-wrap:anywhere}
+.scard .when{font-size:13px;color:var(--ink-2)}
+.scard .song{font-size:13.5px;color:var(--ink-2);display:flex;gap:7px;align-items:flex-start;min-width:0}
+.scard .song svg{width:15px;height:15px;flex:none;margin-top:2px;color:var(--ink-3)}
+.scard .song span{overflow-wrap:anywhere}
+.scard .tags{display:flex;gap:5px;flex-wrap:wrap}
+.lvl{display:inline-flex;gap:3px;align-items:center}
+.lvl i{width:6px;height:12px;border-radius:2px;background:var(--line-2)}
+.lvl i.on{background:var(--ink-2)}
+.section-t{display:flex;align-items:center;gap:10px;margin-top:8px}
+.seg.icons button{display:inline-flex;align-items:center;gap:6px;padding:0 12px}
+.seg.icons svg{width:16px;height:16px}
+.alist{display:flex;flex-direction:column}
+.lrow,.lhead{display:grid;grid-template-columns:22px 36px minmax(0,1.4fr) minmax(0,1fr) minmax(0,.9fr) 78px minmax(0,1.6fr) minmax(0,1fr);gap:14px;align-items:center;padding:10px 18px}
+.lhead{padding-block:12px 10px;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);border-bottom:1px solid var(--line)}
+.lrow{--c:var(--ink-3);width:100%;border:0;border-top:1px solid var(--line);background:none;text-align:left;font-size:14px;color:var(--ink)}
+.lhead+.lrow{border-top:0}
+.lrow:hover{background:var(--surface-2)}
+.lrow .av{width:36px;height:36px;font-size:14px;border-radius:10px}
+.lrow .nm{font-weight:600;font-size:15px;line-height:1.25;overflow-wrap:anywhere}
+.lrow .loc{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink-2)}
+.lrow .loc .dot{width:7px;height:7px}
+.lrow .c{color:var(--ink-2);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lrow .c.song{white-space:normal;overflow-wrap:anywhere}
+.lrow .tg{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
+.lrow .mob{display:none}
+.lrow .ix{font-size:12.5px;font-weight:600;color:var(--ink-3);text-align:right}
+.lhead>span:first-child{text-align:right}
+.sorth{display:inline-flex;align-items:center;gap:5px;border:0;background:none;padding:4px 6px;margin:-4px -6px;border-radius:6px;font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit;justify-self:start}
+.sorth:hover{background:var(--surface-2);color:var(--ink)}
+.sorth.on{color:var(--ink)}
+.sorth .arr{font-size:12px;opacity:.55;letter-spacing:0}
+.sorth.on .arr{opacity:1;color:var(--bat)}
+.tright{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.sortsel{display:flex;align-items:center;gap:8px}
+.sortsel .input{height:38px;width:auto;font-size:13.5px;padding-right:8px}
+.tright.is-list .sortsel{display:none}
+.alist.ex .lrow{opacity:.7}
+.section-t .line{flex:1;height:1px;background:var(--line)}
+
+/* ---------- recital ---------- */
+.rec-layout{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);gap:18px;align-items:start}
+.program{padding:6px 0}
+.prow{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 18px;border-top:1px solid var(--line)}
+.prow:first-child{border-top:0}
+.prow .ord{font-family:var(--f-display);font-weight:700;font-size:20px;color:var(--ink-3);text-align:center}
+.prow .who{display:flex;flex-direction:column;gap:6px;min-width:0}
+.prow .who .l1{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.prow .who b{font-weight:600}
+.prow .ctrl{display:flex;gap:4px;align-items:center}
+.ok-toggle{height:30px;padding:0 10px;border-radius:8px;border:1px solid var(--line-2);background:none;font-size:12.5px;font-weight:600;color:var(--ink-3);display:inline-flex;gap:5px;align-items:center}
+.ok-toggle svg{width:14px;height:14px}
+.ok-toggle[aria-pressed="true"]{background:color-mix(in srgb,var(--cor) 15%,var(--surface));border-color:color-mix(in srgb,var(--cor) 40%,var(--line));color:color-mix(in srgb,var(--cor) 80%,var(--ink))}
+.songin{height:34px;font-size:14px}
+.side-card{padding:18px;display:flex;flex-direction:column;gap:14px}
+.ticket{position:relative;padding:20px 18px;border-radius:16px;background:var(--primary);color:var(--on-primary);overflow:hidden}
+.ticket .staff{position:absolute;inset:auto -10px 14px -10px;height:34px;background:repeating-linear-gradient(to bottom,currentColor 0 1px,transparent 1px 8px);opacity:.14}
+.ticket .k{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;opacity:.7;font-weight:600}
+.ticket .big{font-family:var(--f-display);font-size:30px;font-weight:800;letter-spacing:-.03em;line-height:1.05;margin-top:6px}
+.ticket .when{margin-top:8px;opacity:.85;font-size:14px}
+.kv{display:flex;justify-content:space-between;gap:10px;font-size:14px;color:var(--ink-2)}
+.kv b{color:var(--ink);font-variant-numeric:tabular-nums}
+
+/* ---------- reposições ---------- */
+.rlist{display:flex;flex-direction:column}
+.ritem{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px 18px;border-top:1px solid var(--line)}
+.ritem:first-child{border-top:0}
+.ritem .info{display:flex;flex-direction:column;gap:3px;min-width:0}
+.ritem .info b{font-weight:600}
+.ritem .info span{font-size:13px;color:var(--ink-2);overflow-wrap:anywhere}
+.ritem .sched{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.ritem .sched .input{height:34px;width:auto;font-size:13.5px;padding:0 8px}
+.ritem.done{opacity:.6}
+.addrow{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,1.3fr) auto;gap:10px;align-items:end;padding:16px 18px}
+.tally{display:flex;gap:8px;flex-wrap:wrap}
+
+/* ---------- empty / loading ---------- */
+.empty{padding:40px 20px;text-align:center;color:var(--ink-2);display:flex;flex-direction:column;align-items:center;gap:10px}
+.empty svg{width:34px;height:34px;color:var(--ink-3)}
+.empty b{font-family:var(--f-display);font-size:18px;color:var(--ink)}
+.banner{display:flex;gap:10px;align-items:center;padding:10px 14px;border-radius:12px;background:color-mix(in srgb,var(--brass) 14%,var(--surface));color:color-mix(in srgb,var(--brass) 60%,var(--ink));font-size:13.5px}
+
+/* ---------- drawer ---------- */
+.scrim{position:fixed;inset:0;background:rgba(10,12,20,.42);z-index:40;opacity:0;pointer-events:none;transition:opacity .2s}
+.scrim.open{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(520px,100%);z-index:41;background:var(--bg);border-left:1px solid var(--line);display:flex;flex-direction:column;transform:translateX(102%);transition:transform .28s cubic-bezier(.2,.8,.2,1);padding-right:env(safe-area-inset-right,0px)}
+.drawer.open{transform:none}
+.dh{--c:var(--ink-3);display:flex;gap:14px;align-items:center;padding:calc(18px + env(safe-area-inset-top,0px)) 20px 16px;border-bottom:1px solid var(--line);background:var(--surface)}
+.dh .av{width:52px;height:52px;font-size:21px;border-radius:15px}
+.dh h2{font-size:22px;overflow-wrap:anywhere}
+.dh .when{font-size:13.5px;color:var(--ink-2);margin-top:2px}
+.dh .x{margin-left:auto;align-self:flex-start}
+.db{flex:1;overflow-y:auto;padding:18px 20px 30px;display:flex;flex-direction:column;gap:22px}
+.grp{display:flex;flex-direction:column;gap:12px}
+.grp>h3{margin:0;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+.g2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.g3{display:grid;grid-template-columns:1.2fr 1fr 1.3fr;gap:12px}
+.lvlpick{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.lvlpick button{height:52px;border-radius:10px;border:1px solid var(--line-2);background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:12px;font-weight:600;color:var(--ink-2)}
+.lvlpick button[aria-pressed="true"]{border-color:var(--ink);color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.rec-box{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px 12px;align-items:center;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--surface)}
+.switch{position:relative;width:40px;height:24px;border-radius:999px;background:var(--line-2);border:0;flex:none;transition:background .15s}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:transform .18s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.switch[aria-checked="true"]{background:var(--brass)}
+.switch[aria-checked="true"]::after{transform:translateX(16px)}
+.log{display:flex;flex-direction:column;gap:8px}
+.logi{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:start;padding:10px 12px;border-radius:10px;background:var(--surface);border:1px solid var(--line);font-size:14px}
+.logi .d{font-size:12px;font-weight:700;color:var(--ink-3);padding-top:2px;white-space:nowrap}
+.logi p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.df{display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap;padding:14px 20px calc(14px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--surface)}
+.saved{font-size:12.5px;color:var(--ink-3);display:flex;align-items:center;gap:6px}
+
+.login{max-width:400px;margin:8vh auto 0;padding:28px 24px;display:flex;flex-direction:column;gap:18px}
+.lg-err{margin:0;min-height:1.2em;color:var(--danger);font-size:13.5px}
+body.locked .side,body.locked .tabbar{display:none}
+body.locked .shell{grid-template-columns:minmax(0,1fr)}
+.ajustes{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+.ajustes .btn{justify-content:center}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));translate:-50% 20px;opacity:0;z-index:60;background:var(--primary);color:var(--on-primary);padding:10px 16px;border-radius:12px;font-weight:500;font-size:14px;box-shadow:var(--shadow);transition:opacity .2s,translate .2s;pointer-events:none;max-width:calc(100% - 32px)}
+.toast.show{opacity:1;translate:-50% 0}
+.toast{display:flex;align-items:center;gap:14px}
+.toast.act{pointer-events:auto}
+.toast button{border:0;background:none;color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px;padding:2px 0}
+
+@media (max-width:1100px){
+  .week{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .rec-layout{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:860px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  .side{display:none}
+  .main{padding-block:18px calc(96px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+  .lhead{display:none}
+  .lrow{grid-template-columns:18px 36px minmax(0,1fr) auto;gap:10px;padding:10px 14px}
+  .tright{margin-left:0;width:100%;justify-content:space-between}
+  .tright.is-list .sortsel{display:flex}
+  .sortsel .lbl{display:none}
+  .sortsel .input{max-width:200px}
+  .lrow .c,.lrow .lv{display:none}
+  .lrow .mob{display:block;font-size:12.5px;color:var(--ink-2);margin-top:2px;overflow-wrap:anywhere}
+  .lrow .loc{display:none}
+  .lrow .tg{flex-direction:column;align-items:flex-end}
+  .tabbar{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:30;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:6px max(6px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px))}
+  .tabbar button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;font-size:11px;font-weight:600;color:var(--ink-3);position:relative;border-radius:10px}
+  .tabbar svg{width:22px;height:22px}
+  .tabbar button[aria-current="page"]{color:var(--ink)}
+  .tabbar .badge{position:absolute;top:0;left:calc(50% + 6px);min-width:17px;height:17px;font-size:10px;padding:0 4px}
+  .wrap .mobile-top{display:flex}
+  .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .week{display:none}
+  .daypick{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px}
+  .daypick button{flex:1 0 52px;display:flex;flex-direction:column;align-items:center;gap:1px;padding:8px 4px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-size:11.5px;font-weight:600;color:var(--ink-3)}
+  .daypick button b{font-family:var(--f-display);font-size:19px;color:var(--ink)}
+  .daypick button[aria-pressed="true"]{background:var(--primary);border-color:var(--primary);color:var(--on-primary)}
+  .daypick button[aria-pressed="true"] b{color:var(--on-primary)}
+  .daypick button.today:not([aria-pressed="true"]) b{color:var(--bat)}
+  .daypick button .cnt{font-size:10.5px;opacity:.8}
+  .week.mobile{display:flex;flex-direction:column}
+  .addrow{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .addrow .full{grid-column:1/-1}
+  .ritem{grid-template-columns:auto minmax(0,1fr)}
+  .ritem .sched{grid-column:1/-1;justify-content:flex-start}
+  .prow{grid-template-columns:28px minmax(0,1fr);padding:12px 14px}
+  .prow .ctrl{grid-column:2}
+  .grade{grid-template-columns:30px repeat(6,minmax(0,1fr));grid-template-rows:32px repeat(var(--rows),minmax(40px,1fr));height:clamp(calc(32px + var(--rows) * 40px),calc(100dvh - 275px - env(safe-area-inset-bottom,0px)),calc(32px + var(--rows) * 56px))}
+  .gh{padding:0 2px;justify-content:center;font-size:11.5px}
+  .gh .dl,.gh small{display:none}
+  .gh .ds{display:inline}
+  .gt{padding:5px 2px 0;font-size:10.5px;text-align:center}
+  .gc{padding:2px}
+  .lesson{padding:2px 3px 2px 6px;border-radius:7px}
+  .lesson::before{width:3px}
+  .lesson .n{letter-spacing:-.02em}
+  .lesson .n{font-size:11.5px;line-height:1.1}
+  .lesson .n>span:first-child{white-space:normal;text-overflow:clip;overflow-wrap:anywhere;hyphens:auto;-webkit-hyphens:auto;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+  .head.compact h1{display:none}
+  .head.compact .actions{flex-wrap:nowrap;width:100%}
+  .head.compact .chips{flex-wrap:nowrap;overflow-x:auto;flex:1;min-width:0;scrollbar-width:none}
+  .head.compact .chips::-webkit-scrollbar{display:none}
+  .head.compact .chip{flex:none}
+  .head.compact .btn.primary{flex:none}
+  .lesson .i,.lesson .marks{display:none}
+  .gc.lunch::after{font-size:8.5px;letter-spacing:.02em}
+  .gc .add{font-size:16px}
+  .gc .add span{display:none}
+}
+@media (max-width:480px){
+  .g3{grid-template-columns:1fr 1fr}
+  .g3 .full{grid-column:1/-1}
+  .head .actions .btn span{display:none}
+}
+.mobile-top{display:none;align-items:center;gap:10px}
+.loc-sm.loc-sm{--c:var(--sm)} .loc-bateria.loc-bateria{--c:var(--bat)} .loc-corredor.loc-corredor{--c:var(--cor)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="shell">
+  <aside class="side" aria-label="Navegação">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3" fill="currentColor"/><circle cx="18" cy="16" r="3" fill="currentColor"/></svg></div>
+      <div><div class="brand-name">Horários HR</div><div class="brand-sub">Aulas do Lucas</div></div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="side-foot">
+      <div class="legend">
+        <div class="eyebrow">Locais</div>
+        <div class="lg"><span class="dot" style="--c:var(--sm)"></span>São Manuel</div>
+        <div class="lg"><span class="dot" style="--c:var(--bat)"></span>Sala Bateria</div>
+        <div class="lg"><span class="dot" style="--c:var(--cor)"></span>Sala Corredor</div>
+      </div>
+      <button class="btn ghost" data-go="ajustes" id="ajustesBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Planilha, backup e conta</button>
+    </div>
+  </aside>
+
+  <main class="main" lang="pt-BR"><div class="wrap" id="view"></div></main>
+</div>
+
+<nav class="tabbar" id="tabbar" aria-label="Navegação"></nav>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-hidden="true" role="dialog" aria-label="Ficha do aluno"></aside>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+/* ---------------- constants ---------------- */
+const DIAS = ['Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+const DIAS_C = ['Seg','Ter','Qua','Qui','Sex','Sáb'];
+const LOCAIS = { sm:'São Manuel', bateria:'Sala Bateria', corredor:'Sala Corredor' };
+const NIVEIS = ['', 'Iniciante', 'Básico', 'Intermediário', 'Avançado'];
+const ESC = { nao:'Escalas: ainda não', estudando:'Estudando escalas', ok:'Escalas em dia' };
+const INSTR = ['Violão','Guitarra','Violino','Baixo','Ukulele','Canto','Teclado','Bateria','Cavaquinho'];
+const REC = { jul:'Julho', out:'Outubro' };
+const MESES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+
+const I = {
+  grade:'<path d="M3 5h18M3 12h18M3 19h18M8 3v18M16 3v18"/>',
+  semana:'<rect x="3" y="4.5" width="18" height="16.5" rx="3"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/>',
+  alunos:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><path d="M16 4.6a3.5 3.5 0 0 1 0 6.8M18 14.8c2 .7 3.2 2.4 3.5 5.2"/>',
+  recital:'<path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z"/>',
+  reposicoes:'<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4.5h4.5"/><path d="M12 7.5V12l3 2"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  x:'<path d="M6 6l12 12M18 6 6 18"/>',
+  left:'<path d="m15 18-6-6 6-6"/>', right:'<path d="m9 18 6-6-6-6"/>',
+  up:'<path d="m18 15-6-6-6 6"/>', down:'<path d="m6 9 6 6 6-6"/>',
+  note:'<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+  check:'<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+  trash:'<path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13"/>',
+  dl:'<path d="M12 3v12m0 0-4-4m4 4 4-4M5 21h14"/>',
+  cards:'<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>',
+  lista:'<path d="M8.5 6h12M8.5 12h12M8.5 18h12"/><circle cx="4.2" cy="6" r="1" fill="currentColor"/><circle cx="4.2" cy="12" r="1" fill="currentColor"/><circle cx="4.2" cy="18" r="1" fill="currentColor"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
+  up2:'<path d="M12 21V9m0 0 4 4m-4-4-4 4M5 3h14"/>',
+  out:'<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H3"/>',
+};
+const ic = (n, sw = 2) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[n]}</svg>`;
+const icStar = `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">${I.recital}</svg>`;
+
+const VIEWS = [
+  ['grade','Grade'], ['semana','Semana'], ['alunos','Alunos'], ['recital','Recital'], ['reposicoes','Reposições']
+];
+
+/* ---------------- modes ---------------- */
+// Inside Claude the page uses the artifact's database. The standalone build (site link and APK)
+// sets HR_STANDALONE, and HR_FIREBASE when the Firebase project is configured.
+const STANDALONE = !!window.HR_STANDALONE;
+const FB_CONFIG = window.HR_FIREBASE || null;
+const IN_APK = !!window.Capacitor?.isNativePlatform?.();
+
+/* ---------------- state ---------------- */
+const S = {
+  alunos: {}, repos: {}, config: {},
+  loaded: { alunos:false, repos:false },
+  db: null, offline: false,
+  view: 'grade', loc: 'todos', q: '', weekOff: 0, mDay: null,
+  recTab: null, openId: null, newDraft: null, alView: 'cards',
+};
+S.sort = { key: 'horario', dir: 1 };
+try { const v = localStorage.getItem('horarios-hr-alview'); if (v === 'lista' || v === 'cards') S.alView = v; } catch {}
+try { const o = JSON.parse(localStorage.getItem('horarios-hr-sort') || 'null'); if (o && ['nome','horario','instrumento','nivel'].includes(o.key)) S.sort = { key: o.key, dir: o.dir === -1 ? -1 : 1 }; } catch {}
+const SORT_LABEL = { nome:['Nome (A → Z)','Nome (Z → A)'], horario:['Horário (mais cedo primeiro)','Horário (mais tarde primeiro)'], instrumento:['Instrumento (A → Z)','Instrumento (Z → A)'], nivel:['Nível (iniciante → avançado)','Nível (avançado → iniciante)'] };
+function setSort(key, dir) {
+  S.sort = { key, dir };
+  try { localStorage.setItem('horarios-hr-sort', JSON.stringify(S.sort)); } catch {}
+  render();
+}
+// Empty values (no slot, no instrument, no level) always go to the end, whichever direction.
+function sortAlunos(list) {
+  const { key, dir } = S.sort;
+  const coll = (x, y) => (x || '').localeCompare(y || '', 'pt-BR', { sensitivity: 'base' });
+  const byName = (x, y) => coll(x[1].nome, y[1].nome);
+  const cmp = {
+    nome: (x, y) => dir * byName(x, y),
+    horario: (x, y) => {
+      const ex = x[1].dia == null || !x[1].hora, ey = y[1].dia == null || !y[1].hora;
+      if (ex !== ey) return ex ? 1 : -1;
+      return dir * ((x[1].dia - y[1].dia) || coll(x[1].hora, y[1].hora)) || byName(x, y);
+    },
+    instrumento: (x, y) => {
+      const ex = !x[1].instrumento, ey = !y[1].instrumento;
+      if (ex !== ey) return ex ? 1 : -1;
+      return dir * coll(x[1].instrumento, y[1].instrumento) || byName(x, y);
+    },
+    nivel: (x, y) => {
+      const ex = !x[1].nivel, ey = !y[1].nivel;
+      if (ex !== ey) return ex ? 1 : -1;
+      return dir * ((x[1].nivel || 0) - (y[1].nivel || 0)) || byName(x, y);
+    },
+  }[key];
+  return list.slice().sort(cmp);
+}
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $ = s => document.querySelector(s);
+const clone = o => JSON.parse(JSON.stringify(o));
+
+/* ---------------- dates ---------------- */
+const pad = n => String(n).padStart(2,'0');
+const iso = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parseISO = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); };
+const fmtShort = s => { if (!s) return ''; const d = parseISO(s); return `${d.getDate()} ${MESES[d.getMonth()]}`; };
+const fmtLong = s => { if (!s) return ''; const d = parseISO(s); return d.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long'}); };
+const todayISO = () => iso(new Date());
+function weekStart(off = 0) {
+  const d = new Date(); d.setHours(0,0,0,0);
+  const wd = d.getDay();
+  d.setDate(d.getDate() + (wd === 0 ? 1 : 1 - wd) + off * 7);
+  return d;
+}
+const dayIdxOf = s => { const g = parseISO(s).getDay(); return g === 0 ? -1 : g - 1; };
+const hourOf = t => t ? parseInt(t.split(':')[0], 10) : null;
+
+/* ---------------- data helpers ---------------- */
+const ativos = () => Object.entries(S.alunos).filter(([,a]) => a.ativo !== false);
+const nome = id => S.alunos[id]?.nome || 'Aluno removido';
+const locCls = a => 'loc-' + (a?.local || 'x');
+const initials = n => (n || '?').trim().split(/\s+/).slice(0,2).map(w => w[0]).join('').toUpperCase();
+function disamb(id) {
+  // Same first name appears more than once (three Lucas): add the slot so the cards stay distinguishable.
+  const a = S.alunos[id]; if (!a) return '';
+  const same = ativos().filter(([k,b]) => k !== id && (b.nome||'').trim().toLowerCase() === (a.nome||'').trim().toLowerCase());
+  return same.length ? (a.dia != null ? ` · ${DIAS_C[a.dia]} ${a.hora||''}` : '') : '';
+}
+const pendRepos = () => Object.entries(S.repos).filter(([,r]) => !r.feita);
+const repCount = id => pendRepos().filter(([,r]) => r.alunoId === id).length;
+const recOn = (a, k) => !!a?.recital?.[k]?.on;
+function currentRecital() {
+  const m = new Date().getMonth() + 1;
+  return (m >= 8 && m <= 10) ? 'out' : 'jul';
+}
+const lvlBars = n => `<span class="lvl" title="${esc(NIVEIS[n]||'Sem nível')}">${[1,2,3,4].map(i => `<i class="${i <= (n||0) ? 'on' : ''}"></i>`).join('')}</span>`;
+function blankAluno(extra = {}) {
+  return Object.assign({ nome:'', instrumento:'', dia:null, hora:'', local:'sm', nivel:0, musicaAtual:'', escalaStatus:'', escalaQual:'',
+    objetivos:'', obs:'', contato:'', inicio: todayISO(), ativo:true,
+    recital:{ jul:{on:false,musica:'',ok:false,ordem:0}, out:{on:false,musica:'',ok:false,ordem:0} }, diario:[], criadoEm: new Date().toISOString() }, extra);
+}
+function newId(n) {
+  const base = (n||'aluno').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,24) || 'aluno';
+  return base + '-' + Math.random().toString(36).slice(2,7);
+}
+
+/* ---------------- persistence ---------------- */
+const chains = {}, timers = {}, dirty = new Set();
+const LS_KEY = 'horarios-hr-offline';
+function saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify({alunos:S.alunos, repos:S.repos, config:S.config})); } catch {} }
+function write(col, id, data) {
+  if (!S.db) { saveLocal(); return Promise.resolve(); }
+  const key = col + '/' + id;
+  chains[key] = (chains[key] || Promise.resolve()).then(() => S.db.collection(col).doc(id).set(data))
+    .catch(e => { toast(e?.code === 'quota_exceeded' ? 'Espaço cheio: remova itens antigos para salvar.' : 'Não consegui salvar. Confira sua conexão e tente de novo.'); });
+  return chains[key];
+}
+function del(col, id) {
+  if (!S.db) { saveLocal(); return Promise.resolve(); }
+  const key = col + '/' + id;
+  chains[key] = (chains[key] || Promise.resolve()).then(() => S.db.collection(col).doc(id).delete()).catch(() => toast('Não consegui excluir agora.'));
+  return chains[key];
+}
+function saveAluno(id, now = false) {
+  dirty.add(id);
+  clearTimeout(timers[id]);
+  const go = () => { const a = S.alunos[id]; if (!a) return; write('alunos', id, clone(a)).then(() => { dirty.delete(id); markSaved(); }); };
+  if (now) go(); else timers[id] = setTimeout(go, 550);
+}
+function saveRepo(id) { write('reposicoes', id, clone(S.repos[id])); }
+function saveConfig() { write('config', 'geral', clone(S.config)); }
+function markSaved() { const el = $('#savedNote'); if (el) el.innerHTML = `${ic('check')}Salvo`; }
+
+const browserDl = {
+  async save({ filename, data }) {
+    const blob = data instanceof Blob ? data : new Blob([data]);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    return { status: 'saved' };
+  }
+};
+let fbReady = false;
+async function firebaseBoot() {
+  try {
+    if (!fbReady) {
+      firebase.initializeApp(FB_CONFIG);
+      try { await firebase.firestore().enablePersistence({ synchronizeTabs: true }); } catch {}
+      fbReady = true;
+    }
+    const user = await new Promise(res => { const off = firebase.auth().onAuthStateChanged(u => { off(); res(u); }); });
+    if (!user) { S.needLogin = true; render(); return null; }
+    S.needLogin = false; S.user = { email: user.email };
+    return firebase.firestore();
+  } catch (e) {
+    S.fbError = true; S.loaded.alunos = true; render(); return null;
+  }
+}
+function snapError(e) {
+  if (e?.code === 'permission-denied') toast('Sem permissão para ler os dados. Confira as regras do Firestore.');
+}
+async function boot() {
+  render();
+  let db = null;
+  if (FB_CONFIG) {
+    db = await firebaseBoot();
+    if (!db) return;
+  } else if (!STANDALONE) {
+    try { db = window.claude?.use ? await window.claude.use('db') : null; } catch {}
+  }
+  if (STANDALONE) S.dl = IN_APK ? null : browserDl;
+  if (!db) {
+    S.offline = true;
+    try { const o = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); if (o) { S.alunos = o.alunos||{}; S.repos = o.repos||{}; S.config = o.config||{}; } } catch {}
+    S.loaded.alunos = S.loaded.repos = true; render(); return;
+  }
+  S.db = db;
+  db.collection('alunos').onSnapshot(snap => {
+    const next = {};
+    snap.docs.forEach(d => { next[d.id] = dirty.has(d.id) && S.alunos[d.id] ? S.alunos[d.id] : clone(d.data()); });
+    for (const id of dirty) if (S.alunos[id] && !next[id]) next[id] = S.alunos[id];
+    if (S.newDraft && S.alunos[S.newDraft]) next[S.newDraft] = S.alunos[S.newDraft];
+    S.alunos = next; S.loaded.alunos = true; render();
+  }, e => { snapError(e); S.loaded.alunos = true; render(); });
+  db.collection('reposicoes').onSnapshot(snap => {
+    const next = {}; snap.docs.forEach(d => next[d.id] = clone(d.data()));
+    S.repos = next; S.loaded.repos = true; render();
+  }, e => { snapError(e); S.loaded.repos = true; render(); });
+  db.doc('config/geral').onSnapshot(snap => { if (snap.exists) { S.config = clone(snap.data()); render(); } }, () => {});
+  if (!STANDALONE) claude.use('downloads').then(dl => { S.dl = dl; render(); }).catch(() => {});
+}
+
+/* ---------------- navigation ---------------- */
+function navHTML(mobile) {
+  const pend = pendRepos().length;
+  return VIEWS.map(([k,l]) => `<button data-go="${k}" ${S.view === k ? 'aria-current="page"' : ''}>${ic(k, 1.8)}<span>${l}</span>${k === 'reposicoes' && pend ? `<span class="badge warn num">${pend}</span>` : ''}</button>`).join('');
+}
+function go(v) {
+  S.view = v;
+  try { history.replaceState(null, '', '#' + v); } catch {}
+  render(); window.scrollTo({top:0});
+}
+
+/* ---------------- render ---------------- */
+function render() {
+  $('#nav').innerHTML = navHTML();
+  $('#tabbar').innerHTML = navHTML(true);
+  const v = $('#view');
+  document.body.classList.toggle('locked', !!S.needLogin);
+  if (S.needLogin) { v.innerHTML = viewLogin(); return; }
+  const loading = !S.loaded.alunos;
+  if (loading) { v.innerHTML = `<div class="head"><div><div class="eyebrow">Horários HR</div><h1>Carregando seus horários…</h1><p class="sub">Seus alunos, a grade da semana, o recital e as reposições aparecem aqui em instantes.</p></div></div>`; return; }
+  const fns = { grade:viewGrade, semana:viewSemana, alunos:viewAlunos, recital:viewRecital, reposicoes:viewRepos, ajustes:viewAjustes };
+  v.classList.toggle('grade-view', S.view === 'grade');
+  const banner = S.fbError ? 'Não consegui conectar ao Firebase. Confira a internet e abra o app de novo.'
+    : S.offline ? (STANDALONE ? 'Por enquanto os dados ficam só neste aparelho. Em Ajustes você importa um backup.' : 'Abra este app pelo link do Claude para salvar seus dados na nuvem. Aqui ele está guardando só neste navegador.') : '';
+  v.innerHTML = (banner ? `<div class="banner">${banner}</div>` : '') + (fns[S.view] || viewGrade)();
+}
+
+function mobileBrand() {
+  return `<div class="mobile-top"><div class="brand-mark" style="width:32px;height:32px;border-radius:9px">${ic('note')}</div><div class="brand-name" style="font-size:17px">Horários HR</div><button class="btn icon ghost" data-go="ajustes" aria-label="Planilha, backup e conta" style="margin-left:auto">${ic('gear',1.8)}</button></div>`;
+}
+
+/* ----- Login (standalone with Firebase) ----- */
+function viewLogin() {
+  return `<div class="login panel">
+    <div class="brand-mark" style="width:46px;height:46px;border-radius:13px">${ic('note')}</div>
+    <div><h1>Horários HR</h1><p class="sub">Entre com o e-mail e a senha que você criou no Firebase.</p></div>
+    <form id="loginForm" class="grp" novalidate>
+      <div class="field"><label for="lg-email">E-mail</label><input class="input" id="lg-email" type="email" autocomplete="username" required></div>
+      <div class="field"><label for="lg-pass">Senha</label><input class="input" id="lg-pass" type="password" autocomplete="current-password" required></div>
+      <p class="lg-err" id="lgErr" role="alert"></p>
+      <button class="btn primary" type="submit" id="lgBtn" style="justify-content:center">Entrar</button>
+    </form>
+  </div>`;
+}
+document.addEventListener('submit', async e => {
+  if (e.target.id !== 'loginForm') return;
+  e.preventDefault();
+  const email = $('#lg-email').value.trim(), pass = $('#lg-pass').value;
+  const err = $('#lgErr'), btn = $('#lgBtn');
+  if (!email || !pass) { err.textContent = 'Preencha o e-mail e a senha.'; return; }
+  btn.disabled = true; btn.textContent = 'Entrando…'; err.textContent = '';
+  try {
+    await firebase.auth().signInWithEmailAndPassword(email, pass);
+    S.needLogin = false; boot();
+  } catch (x) {
+    btn.disabled = false; btn.textContent = 'Entrar';
+    err.textContent = x?.code === 'auth/network-request-failed' ? 'Sem internet. Conecte e tente de novo.'
+      : x?.code === 'auth/too-many-requests' ? 'Muitas tentativas. Espere um pouco e tente de novo.'
+      : 'E-mail ou senha incorretos.';
+  }
+});
+
+/* ----- Ajustes ----- */
+function viewAjustes() {
+  const where = FB_CONFIG ? `Na sua nuvem do Firebase${S.user?.email ? `, com a conta ${esc(S.user.email)}` : ''}. Computador e celular mostram os mesmos dados.`
+    : STANDALONE ? 'Só neste aparelho. Outros aparelhos não veem estes dados.'
+    : S.offline ? 'Só neste navegador.' : 'Na sua conta do Claude.';
+  const nA = Object.keys(S.alunos).length, nR = Object.keys(S.repos).length;
+  return `
+  ${mobileBrand()}
+  <div class="head"><div><div class="eyebrow">Ajustes</div><h1>Planilha, backup e conta</h1></div></div>
+  <div class="cards ajustes">
+    <div class="panel side-card">
+      <h2>Planilha</h2>
+      <p class="sub" style="margin:0">Baixa a grade, os alunos, o recital e as reposições em um arquivo do Excel.</p>
+      ${S.dl ? `<button class="btn" data-act="xlsx">${ic('dl')}Baixar planilha (.xlsx)</button>` : `<p class="sub" style="margin:0">${IN_APK ? 'No app do celular não dá para baixar arquivos. Use o link no computador.' : 'Indisponível aqui.'}</p>`}
+    </div>
+    <div class="panel side-card">
+      <h2>Backup</h2>
+      <p class="sub" style="margin:0">Hoje há ${nA} ${nA===1?'aluno':'alunos'} e ${nR} ${nR===1?'reposição':'reposições'}. O backup guarda tudo em um arquivo .json.</p>
+      ${S.dl ? `<button class="btn" data-act="backup">${ic('dl')}Exportar backup</button>` : ''}
+      <label class="btn" for="importFile" style="cursor:pointer">${ic('up2')}Importar backup</label>
+      <input type="file" id="importFile" accept="application/json,.json" hidden>
+      <p class="sub" style="margin:0;font-size:12.5px">Importar junta o backup com o que já está aqui. Um aluno que já existe é substituído pela versão do backup.</p>
+    </div>
+    <div class="panel side-card">
+      <h2>Onde ficam os dados</h2>
+      <p class="sub" style="margin:0">${where}</p>
+      ${FB_CONFIG && S.user ? `<button class="btn" data-act="logout">${ic('out',1.9)}Sair da conta</button>` : ''}
+      ${window.HR_INSTALL ? `<button class="btn primary" data-act="install">${ic('dl')}Instalar o app neste aparelho</button>` : ''}
+    </div>
+  </div>`;
+}
+
+function locChips() {
+  const opts = [['todos','Todos',null],['sm','São Manuel','--sm'],['bateria','Sala Bateria','--bat'],['corredor','Sala Corredor','--cor']];
+  return `<div class="chips" role="group" aria-label="Filtrar por local">${opts.map(([k,l,c]) => `<button class="chip" data-loc="${k}" aria-pressed="${S.loc===k}">${c ? `<span class="dot" style="--c:var(${c})"></span>` : ''}${l}</button>`).join('')}</div>`;
+}
+
+/* ----- Grade ----- */
+const SAT_OFF_FROM = 12; // Saturday has lessons only in the morning
+const isOff = (d, h) => d === 5 && h >= SAT_OFF_FROM;
+function viewGrade() {
+  const list = ativos();
+  const comHora = list.filter(([,a]) => a.dia != null && a.hora);
+  const recK = currentRecital();
+  const nRec = list.filter(([,a]) => recOn(a, recK)).length;
+  const hrs = new Set([8,9,10,11,12,13,14,15,16,17,18,19,20]);
+  comHora.forEach(([,a]) => hrs.add(hourOf(a.hora)));
+  const hours = [...hrs].sort((a,b) => a-b);
+  const tIdx = dayIdxOf(todayISO());
+  let cells = `<div class="gh"></div>` + DIAS.map((d,i) => `<div class="gh ${i===tIdx?'today':''}"><span class="dl">${d}</span><span class="ds">${DIAS_C[i]}</span><small class="num">${comHora.filter(([,a]) => a.dia===i).length}</small></div>`).join('');
+  for (const h of hours) {
+    cells += `<div class="gt num">${pad(h)}h</div>`;
+    for (let d = 0; d < 6; d++) {
+      const here = comHora.filter(([,a]) => a.dia === d && hourOf(a.hora) === h).sort((x,y) => x[1].hora.localeCompare(y[1].hora));
+      const off = isOff(d, h);
+      const lunch = h === 12 && !here.length && !off;
+      const add = here.length || lunch || off ? '' : `<button class="add" data-new="${d}|${pad(h)}:00" aria-label="Novo aluno ${DIAS[d]} ${pad(h)}h">+<span> aluno</span></button>`;
+      cells += `<div class="gc ${lunch ? 'lunch' : ''} ${off ? 'off' : ''}" data-cell="${d}|${h}">${add}${here.map(([id,a]) => lessonBtn(id,a,recK)).join('')}</div>`;
+    }
+  }
+  const semHora = list.filter(([,a]) => a.dia == null || !a.hora);
+  return `
+  ${mobileBrand()}
+  <div class="head compact">
+    <h1>Todos os horários</h1>
+    <div class="actions">${locChips()}<button class="btn primary" data-new="">${ic('plus',2.2)}<span>Novo aluno</span></button></div>
+  </div>
+  ${list.length ? `<div class="panel"><div class="grid-scroll"><div class="grade" style="--rows:${hours.length}">${cells}</div></div></div>` : emptyAlunos()}
+  ${semHora.length ? `<div class="section-t"><h2>Sem horário fixo</h2><div class="line"></div></div><div class="chips">${semHora.map(([id,a]) => `<button class="chip" data-open="${id}" data-drag="${id}">${esc(a.nome)}${a.instrumento ? ` · ${esc(a.instrumento)}` : ''}</button>`).join('')}</div>` : ''}
+  <div class="stats">
+    <div class="stat"><b class="num">${list.length}</b><span>alunos ativos</span></div>
+    <div class="stat"><b class="num">${comHora.length}</b><span>aulas por semana</span></div>
+    <div class="stat"><b class="num">${nRec}</b><span>no recital de ${REC[recK].toLowerCase()}</span></div>
+    <div class="stat"><b class="num">${pendRepos().length}</b><span>aulas para repor</span></div>
+  </div>
+  <p class="sub" style="margin:0">Para mudar o horário de um aluno, segure o nome dele na grade e arraste até o novo horário.</p>`;
+}
+function lessonBtn(id, a, recK) {
+  const dim = S.loc !== 'todos' && a.local !== S.loc;
+  const rc = repCount(id);
+  return `<button class="lesson ${locCls(a)} ${dim ? 'dim' : ''}" data-open="${id}" data-drag="${id}">
+    <span class="n"><span>${esc(a.nome)}</span><span class="marks">${recOn(a,recK) ? `<i class="mk" title="Toca no recital">${icStar}</i>` : ''}${rc ? `<i class="mk rep" title="${rc} aula(s) para repor">${ic('reposicoes',2.6)}</i>` : ''}</span></span>
+    <span class="i">${esc(a.instrumento || '—')}${a.hora && !a.hora.endsWith(':00') ? ` · ${esc(a.hora)}` : ''}</span>
+  </button>`;
+}
+function emptyAlunos() {
+  return `<div class="panel empty">${ic('alunos',1.6)}<b>Nenhum aluno ainda</b><span>Toque em “Novo aluno” para colocar o primeiro horário na grade.</span></div>`;
+}
+
+/* ----- Semana ----- */
+function weekItems(dateISO) {
+  const di = dayIdxOf(dateISO);
+  const items = [];
+  ativos().forEach(([id,a]) => {
+    if (a.dia !== di || !a.hora) return;
+    if (a.inicio && a.inicio > dateISO) return;
+    if (S.loc !== 'todos' && a.local !== S.loc) return;
+    const miss = Object.entries(S.repos).find(([,r]) => r.alunoId === id && r.falta === dateISO);
+    items.push({ kind:'aula', id, a, hora:a.hora, miss });
+  });
+  Object.entries(S.repos).forEach(([rid,r]) => {
+    if (r.novaData !== dateISO) return;
+    const a = S.alunos[r.alunoId];
+    if (S.loc !== 'todos' && a?.local !== S.loc) return;
+    items.push({ kind:'repo', id:r.alunoId, a, rid, r, hora:r.novaHora || '' });
+  });
+  return items.sort((x,y) => (x.hora||'99').localeCompare(y.hora||'99'));
+}
+function wcard(it) {
+  const a = it.a || {};
+  if (it.kind === 'repo') {
+    return `<div class="wcard makeup ${locCls(a)}"><div class="top"><span class="t num">${esc(it.hora || 'Sem hora')}</span><span class="pill" style="--c:var(--bat)">Reposição${it.r.feita ? ' · feita' : ''}</span></div>
+      <button class="nm" data-open="${it.id}">${esc(nome(it.id))}</button><div class="meta">${esc(a.instrumento||'')} · falta de ${fmtShort(it.r.falta)}</div></div>`;
+  }
+  const rec = currentRecital();
+  return `<div class="wcard ${locCls(a)} ${it.miss ? 'missed' : ''}">
+    <div class="top"><span class="t num">${esc(it.hora)}</span>${recOn(a,rec) ? `<span class="pill" style="--c:var(--brass)">${icStar}Recital</span>` : ''}</div>
+    <button class="nm" data-open="${it.id}">${esc(a.nome)}</button>
+    <div class="meta">${esc(a.instrumento||'')}${a.musicaAtual ? ` · ${esc(a.musicaAtual)}` : ''}</div>
+    <div class="row">${it.miss ? `<span class="pill" style="--c:var(--danger)">Faltou · repor</span><button class="fb" data-unmiss="${it.miss[0]}">Desfazer</button>` : `<button class="fb" data-miss="${it.id}|${it.date}">Marcar falta</button>`}</div>
+  </div>`;
+}
+function viewSemana() {
+  const ws = weekStart(S.weekOff);
+  const days = DIAS.map((d,i) => { const x = new Date(ws); x.setDate(ws.getDate()+i); return iso(x); });
+  const t = todayISO();
+  const recDates = Object.entries(S.config.recitais || {}).filter(([,r]) => r?.data).map(([k,r]) => [k, r.data]);
+  if (S.mDay == null || !days.includes(S.mDay)) S.mDay = days.includes(t) ? t : days[0];
+  const end = days[5];
+  const range = `${fmtShort(days[0])} – ${fmtShort(end)}`;
+  const col = (ds, i) => {
+    const items = weekItems(ds).map(it => (it.date = ds, it));
+    const rec = recDates.filter(([,d]) => d === ds);
+    return `<div class="day ${ds===t?'today':''}">
+      <div class="day-h"><div><b>${DIAS[i]}</b><div class="cnt num">${items.length} ${items.length===1?'aula':'aulas'}</div></div><span class="d num">${parseISO(ds).getDate()}</span></div>
+      ${rec.map(([k]) => `<div class="recital-day">${icStar}Recital de ${REC[k]}</div>`).join('')}
+      ${items.length ? items.map(wcard).join('') : `<div class="empty-day">Livre</div>`}
+    </div>`;
+  };
+  const mi = days.indexOf(S.mDay);
+  return `
+  ${mobileBrand()}
+  <div class="head">
+    <div><div class="eyebrow">Semana</div><h1>${S.weekOff === 0 ? 'Esta semana' : S.weekOff === 1 ? 'Próxima semana' : S.weekOff === -1 ? 'Semana passada' : 'Semana de ' + fmtShort(days[0])}</h1><p class="sub">Marque faltas aqui: elas entram direto na lista de reposições.</p></div>
+    <div class="weeknav">
+      <button class="btn icon" data-week="-1" aria-label="Semana anterior">${ic('left')}</button>
+      <span class="range num">${range}</span>
+      <button class="btn icon" data-week="1" aria-label="Próxima semana">${ic('right')}</button>
+      ${S.weekOff ? `<button class="btn ghost" data-week="0">Hoje</button>` : ''}
+    </div>
+  </div>
+  ${locChips()}
+  <div class="daypick" role="group" aria-label="Escolher dia">${days.map((ds,i) => `<button data-mday="${ds}" aria-pressed="${ds===S.mDay}" class="${ds===t?'today':''}">${DIAS_C[i]}<b class="num">${parseISO(ds).getDate()}</b><span class="cnt num">${weekItems(ds).length}</span></button>`).join('')}</div>
+  <div class="week">${days.map(col).join('')}</div>
+  <div class="week mobile" style="display:none" id="mweek">${col(S.mDay, mi)}</div>`;
+}
+
+/* ----- Alunos ----- */
+function viewAlunos() {
+  const q = S.q.trim().toLowerCase();
+  const all = Object.entries(S.alunos);
+  const match = ([,a]) => (!q || [a.nome,a.instrumento,a.musicaAtual,a.obs,LOCAIS[a.local]].join(' ').toLowerCase().includes(q)) && (S.loc==='todos' || a.local===S.loc);
+  const act = sortAlunos(all.filter(([,a]) => a.ativo !== false).filter(match));
+  const ex = sortAlunos(all.filter(([,a]) => a.ativo === false).filter(match));
+  const recK = currentRecital();
+  const card = ([id,a]) => {
+    const rc = repCount(id);
+    return `<button class="scard ${locCls(a)}" data-open="${id}">
+      <div class="top"><div class="av">${esc(initials(a.nome))}</div><div style="min-width:0"><div class="nm">${esc(a.nome)}</div><div class="when num">${a.dia != null && a.hora ? `${DIAS[a.dia]} · ${esc(a.hora)}` : 'Sem horário fixo'} · ${esc(LOCAIS[a.local]||'')}</div></div></div>
+      <div class="song">${ic('note',1.8)}<span>${a.musicaAtual ? esc(a.musicaAtual) : '<span style="color:var(--ink-3)">Sem música anotada</span>'}</span></div>
+      <div class="tags">
+        <span class="pill">${esc(a.instrumento || 'Instrumento?')}</span>
+        ${a.nivel ? `<span class="pill" style="gap:7px">${lvlBars(a.nivel)}${NIVEIS[a.nivel]}</span>` : ''}
+        ${a.escalaStatus ? `<span class="pill" style="--c:${a.escalaStatus==='ok'?'var(--cor)':a.escalaStatus==='estudando'?'var(--bat)':'var(--ink-3)'}">${ESC[a.escalaStatus]}</span>` : ''}
+        ${recOn(a,recK) ? `<span class="pill" style="--c:var(--brass)">${icStar}Recital</span>` : ''}
+        ${rc ? `<span class="pill" style="--c:var(--danger)">${rc} p/ repor</span>` : ''}
+      </div>
+    </button>`;
+  };
+  const LOCDOT = { sm:'--sm', bateria:'--bat', corredor:'--cor' };
+  const when = a => a.dia != null && a.hora ? `${DIAS[a.dia]} · ${esc(a.hora)}` : 'Sem horário fixo';
+  const row = ([id,a], i) => {
+    const rc = repCount(id);
+    return `<button class="lrow ${locCls(a)}" data-open="${id}">
+      <div class="ix num">${i + 1}</div>
+      <div class="av">${esc(initials(a.nome))}</div>
+      <div style="min-width:0"><div class="nm">${esc(a.nome)}</div><div class="loc"><span class="dot" style="--c:var(${LOCDOT[a.local]||'--ink-3'})"></span>${esc(LOCAIS[a.local]||'')}</div>
+        <div class="mob num">${when(a)} · ${esc(a.instrumento || '')}${a.musicaAtual ? ` · ${esc(a.musicaAtual)}` : ''}</div></div>
+      <div class="c num">${when(a)}</div>
+      <div class="c">${esc(a.instrumento || '—')}</div>
+      <div class="lv">${a.nivel ? lvlBars(a.nivel) : '<span style="color:var(--ink-3)">—</span>'}</div>
+      <div class="c song">${a.musicaAtual ? esc(a.musicaAtual) : '<span style="color:var(--ink-3)">—</span>'}</div>
+      <div class="tg">${recOn(a,recK) ? `<span class="pill" style="--c:var(--brass)">${icStar}Recital</span>` : ''}${rc ? `<span class="pill" style="--c:var(--danger)">${rc} p/ repor</span>` : ''}</div>
+    </button>`;
+  };
+  const sh = (k, label) => {
+    const on = S.sort.key === k;
+    return `<button class="sorth ${on ? 'on' : ''}" data-sort="${k}" aria-sort="${on ? (S.sort.dir === 1 ? 'ascending' : 'descending') : 'none'}" title="Ordenar por ${label.toLowerCase()}">${label}<span class="arr" aria-hidden="true">${on ? (S.sort.dir === 1 ? '↑' : '↓') : '↕'}</span></button>`;
+  };
+  const lhead = `<div class="lhead"><span>#</span><span></span>${sh('nome','Aluno')}${sh('horario','Horário')}${sh('instrumento','Instrumento')}${sh('nivel','Nível')}<span>Música atual</span><span></span></div>`;
+  const sortSel = `<label class="sortsel"><span class="lbl">Ordenar</span><select class="input" id="sortsel">${Object.entries(SORT_LABEL).flatMap(([k,[a1,a2]]) => [[`${k}|1`,a1],[`${k}|-1`,a2]]).map(([v,l]) => `<option value="${v}" ${v === `${S.sort.key}|${S.sort.dir}` ? 'selected' : ''}>${l}</option>`).join('')}</select></label>`;
+  const block = (items, ex) => S.alView === 'lista'
+    ? `<div class="panel"><div class="alist ${ex ? 'ex' : ''}">${lhead}${items.map(row).join('')}</div></div>`
+    : `<div class="cards" ${ex ? 'style="opacity:.7"' : ''}>${items.map(card).join('')}</div>`;
+  const toggle = `<div class="seg icons" role="group" aria-label="Como mostrar os alunos">
+    <button data-alview="cards" aria-pressed="${S.alView==='cards'}" title="Quadrados">${ic('cards',1.8)}<span>Quadrados</span></button>
+    <button data-alview="lista" aria-pressed="${S.alView==='lista'}" title="Lista">${ic('lista',1.8)}<span>Lista</span></button>
+  </div>`;
+  return `
+  ${mobileBrand()}
+  <div class="head">
+    <div><div class="eyebrow">Alunos</div><h1>Seus alunos</h1><p class="sub">${act.length} ${act.length===1?'aluno ativo':'alunos ativos'}. Toque em um aluno para ver e anotar tudo dele.</p></div>
+    <div class="actions"><button class="btn primary" data-new="">${ic('plus',2.2)}<span>Novo aluno</span></button></div>
+  </div>
+  <div class="toolbar"><label class="search">${ic('search')}<input class="input" id="q" type="search" placeholder="Buscar nome, instrumento, música…" value="${esc(S.q)}" autocomplete="off"></label>${locChips()}<span class="tright ${S.alView === 'lista' ? 'is-list' : ''}">${sortSel}${toggle}</span></div>
+  ${act.length ? block(act, false) : (all.length ? `<div class="panel empty"><b>Nada encontrado</b><span>Tente outro nome ou limpe o filtro.</span></div>` : emptyAlunos())}
+  ${ex.length ? `<div class="section-t"><h2>Ex-alunos</h2><span class="badge num">${ex.length}</span><div class="line"></div></div>${block(ex, true)}` : ''}`;
+}
+
+/* ----- Recital ----- */
+function viewRecital() {
+  const k = S.recTab || currentRecital();
+  const list = ativos().filter(([,a]) => recOn(a,k))
+    .sort((x,y) => (x[1].recital[k].ordem||999) - (y[1].recital[k].ordem||999) || (x[1].nome||'').localeCompare(y[1].nome||''));
+  const songs = {};
+  list.forEach(([,a]) => { const s = (a.recital[k].musica||'').trim().toLowerCase().replace(/^(o|a)\s+/,''); if (s) songs[s] = (songs[s]||0) + 1; });
+  const keyOf = a => (a.recital[k].musica||'').trim().toLowerCase().replace(/^(o|a)\s+/,'');
+  const confirmed = list.filter(([,a]) => a.recital[k].ok).length;
+  const semMusica = list.filter(([,a]) => !(a.recital[k].musica||'').trim()).length;
+  const repetidas = Object.values(songs).filter(n => n > 1).length;
+  const fora = ativos().filter(([,a]) => !recOn(a,k)).sort((x,y) => (x[1].nome||'').localeCompare(y[1].nome||''));
+  const date = S.config.recitais?.[k]?.data || '';
+  const rows = list.map(([id,a], i) => {
+    const r = a.recital[k];
+    const rep = songs[keyOf(a)] > 1;
+    return `<div class="prow">
+      <div class="ord num">${i+1}</div>
+      <div class="who">
+        <div class="l1"><b>${esc(a.nome)}</b><span class="pill ${locCls(a)}" style="--c:var(--c)">${esc(a.instrumento||'')}${esc(disamb(id))}</span>${rep ? `<span class="pill" style="--c:var(--brass)">Música repetida</span>` : ''}</div>
+        <input class="input songin" data-recsong="${id}" value="${esc(r.musica)}" placeholder="Qual música vai tocar?" aria-label="Música de ${esc(a.nome)}">
+      </div>
+      <div class="ctrl">
+        <button class="ok-toggle" data-recok="${id}" aria-pressed="${!!r.ok}">${ic('check',2.4)}${r.ok ? 'Confirmado' : 'Confirmar'}</button>
+        <button class="btn sm icon ghost" data-recmove="${id}|-1" aria-label="Subir" ${i===0?'disabled':''}>${ic('up')}</button>
+        <button class="btn sm icon ghost" data-recmove="${id}|1" aria-label="Descer" ${i===list.length-1?'disabled':''}>${ic('down')}</button>
+        <button class="btn sm icon ghost" data-recoff="${id}" aria-label="Tirar do recital">${ic('x')}</button>
+      </div>
+    </div>`;
+  }).join('');
+  return `
+  ${mobileBrand()}
+  <div class="head">
+    <div><div class="eyebrow">Recital</div><h1>Programa do recital</h1><p class="sub">A ordem desta lista é a ordem das apresentações. Use as setas para reorganizar.</p></div>
+    <div class="seg" role="group" aria-label="Escolher recital">${Object.entries(REC).map(([kk,l]) => `<button data-rectab="${kk}" aria-pressed="${kk===k}">${l}</button>`).join('')}</div>
+  </div>
+  <div class="rec-layout">
+    <div class="panel">${list.length ? `<div class="program">${rows}</div>` : `<div class="empty">${icStar}<b>Ninguém no recital de ${REC[k].toLowerCase()} ainda</b><span>Adicione alunos no quadro ao lado.</span></div>`}</div>
+    <div style="display:flex;flex-direction:column;gap:14px;min-width:0">
+      <div class="ticket"><div class="k">Recital de ${REC[k]}</div><div class="big num">${list.length} ${list.length===1?'aluno':'alunos'}</div><div class="when">${date ? fmtLong(date) : 'Data ainda não definida'}</div><div class="staff" aria-hidden="true"></div></div>
+      <div class="panel side-card">
+        <div class="field"><label for="recdate">Data do recital</label><input class="input" type="date" id="recdate" value="${esc(date)}"></div>
+        <div class="kv"><span>Confirmados</span><b>${confirmed} de ${list.length}</b></div>
+        <div class="kv"><span>Sem música definida</span><b>${semMusica}</b></div>
+        <div class="kv"><span>Músicas repetidas</span><b>${repetidas}</b></div>
+      </div>
+      <div class="panel side-card">
+        <div class="field"><label for="recadd">Adicionar ao recital</label>
+          <div style="display:flex;gap:8px"><select class="input" id="recadd"><option value="">Escolha um aluno…</option>${fora.map(([id,a]) => `<option value="${id}">${esc(a.nome)}${esc(disamb(id))} · ${esc(a.instrumento||'')}</option>`).join('')}</select><button class="btn primary" data-recadd>${ic('plus',2.2)}</button></div>
+        </div>
+        ${list.length ? `<button class="btn ghost danger" id="recClear" style="justify-content:center">Encerrar recital e limpar lista</button>` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ----- Reposições ----- */
+function viewRepos() {
+  const all = Object.entries(S.repos).filter(([,r]) => S.alunos[r.alunoId]);
+  const pend = all.filter(([,r]) => !r.feita).sort((x,y) => (x[1].falta||'').localeCompare(y[1].falta||''));
+  const done = all.filter(([,r]) => r.feita).sort((x,y) => (y[1].novaData||y[1].falta||'').localeCompare(x[1].novaData||x[1].falta||'')).slice(0,20);
+  const tally = {};
+  pend.forEach(([,r]) => tally[r.alunoId] = (tally[r.alunoId]||0) + 1);
+  const opts = ativos().sort((x,y) => (x[1].nome||'').localeCompare(y[1].nome||'')).map(([id,a]) => `<option value="${id}">${esc(a.nome)}${esc(disamb(id))} · ${esc(a.instrumento||'')}</option>`).join('');
+  const item = ([rid,r]) => {
+    const a = S.alunos[r.alunoId];
+    return `<div class="ritem ${r.feita?'done':''}">
+      <div class="av ${locCls(a)}" style="width:38px;height:38px;font-size:15px">${esc(initials(a.nome))}</div>
+      <div class="info"><b>${esc(a.nome)}${esc(disamb(r.alunoId))}</b><span>Faltou ${r.falta ? fmtLong(r.falta) : '(data não anotada)'}${r.motivo ? ' · ' + esc(r.motivo) : ''}</span>
+        ${r.feita ? `<span>Reposta ${r.novaData ? 'em ' + fmtShort(r.novaData) : ''}</span>` : ''}</div>
+      <div class="sched">
+        ${r.feita ? `<button class="btn sm ghost" data-rundone="${rid}">Desfazer</button>` : `
+        <input class="input" type="date" data-rdate="${rid}" value="${esc(r.novaData||'')}" aria-label="Nova data">
+        <input class="input" type="time" data-rtime="${rid}" value="${esc(r.novaHora||'')}" aria-label="Novo horário" step="900">
+        <button class="btn sm" data-rdone="${rid}">${ic('check',2.4)}Feita</button>`}
+        <button class="btn sm icon ghost" data-rdel="${rid}" aria-label="Excluir">${ic('trash',1.8)}</button>
+      </div>
+    </div>`;
+  };
+  return `
+  ${mobileBrand()}
+  <div class="head">
+    <div><div class="eyebrow">Reposições</div><h1>Aulas para repor</h1><p class="sub">Anote a falta, marque a nova data e ela aparece na semana certa.</p></div>
+  </div>
+  <div class="panel">
+    <div class="addrow">
+      <div class="field"><label for="ra-aluno">Aluno</label><select class="input" id="ra-aluno"><option value="">Escolha…</option>${opts}</select></div>
+      <div class="field"><label for="ra-data">Dia da falta</label><input class="input" type="date" id="ra-data" value="${todayISO()}"></div>
+      <div class="field"><label for="ra-motivo">Motivo (opcional)</label><input class="input" id="ra-motivo" placeholder="Viagem, doença, feriado…"></div>
+      <button class="btn primary full" id="ra-add">${ic('plus',2.2)}Adicionar</button>
+    </div>
+  </div>
+  ${Object.keys(tally).length ? `<div class="tally">${Object.entries(tally).sort((a,b) => b[1]-a[1]).map(([id,n]) => `<button class="chip" data-open="${id}">${esc(nome(id))}${esc(disamb(id))}<span class="badge warn num">${n}</span></button>`).join('')}</div>` : ''}
+  <div class="section-t"><h2>Pendentes</h2><span class="badge ${pend.length?'warn':''} num">${pend.length}</span><div class="line"></div></div>
+  <div class="panel">${pend.length ? `<div class="rlist">${pend.map(item).join('')}</div>` : `<div class="empty">${ic('check',1.6)}<b>Tudo em dia</b><span>Nenhuma aula para repor. Quando um aluno faltar, marque aqui ou direto na visão da semana.</span></div>`}</div>
+  ${done.length ? `<div class="section-t"><h2>Já repostas</h2><div class="line"></div></div><div class="panel"><div class="rlist">${done.map(item).join('')}</div></div>` : ''}`;
+}
+
+/* ---------------- drawer (ficha do aluno) ---------------- */
+function openAluno(id, preset) {
+  if (!id) {
+    id = newId('novo');
+    S.newDraft = id;
+    S.alunos[id] = blankAluno(preset || {});
+  }
+  S.openId = id;
+  drawRender();
+  $('#scrim').classList.add('open');
+  const d = $('#drawer'); d.classList.add('open'); d.setAttribute('aria-hidden','false');
+  setTimeout(() => { const f = S.newDraft === id ? $('#f-nome') : null; f?.focus(); }, 280);
+}
+function closeAluno() {
+  const id = S.openId;
+  if (id && S.newDraft === id) {
+    if (!(S.alunos[id].nome||'').trim()) delete S.alunos[id];
+    else saveAluno(id, true);
+    S.newDraft = null;
+  } else if (id && timers[id]) { clearTimeout(timers[id]); saveAluno(id, true); }
+  S.openId = null;
+  $('#scrim').classList.remove('open');
+  const d = $('#drawer'); d.classList.remove('open'); d.setAttribute('aria-hidden','true');
+  render();
+}
+function drawRender() {
+  const id = S.openId, a = S.alunos[id];
+  if (!a) return;
+  a.recital = a.recital || {}; ['jul','out'].forEach(k => a.recital[k] = Object.assign({on:false,musica:'',ok:false,ordem:0}, a.recital[k]||{}));
+  a.diario = a.diario || [];
+  const isNew = S.newDraft === id;
+  const reps = Object.entries(S.repos).filter(([,r]) => r.alunoId === id && !r.feita);
+  const horaOpts = [];
+  for (let h = 7; h <= 22; h++) for (const m of ['00','30']) horaOpts.push(`${pad(h)}:${m}`);
+  if (a.hora && !horaOpts.includes(a.hora)) horaOpts.push(a.hora);
+  horaOpts.sort();
+  $('#drawer').innerHTML = `
+  <div class="dh ${locCls(a)}" id="dhead">
+    <div class="av">${esc(initials(a.nome))}</div>
+    <div style="min-width:0"><h2 id="dname">${esc(a.nome || 'Novo aluno')}</h2><div class="when num" id="dwhen">${whenText(a)}</div></div>
+    <button class="btn icon ghost x" data-close aria-label="Fechar">${ic('x')}</button>
+  </div>
+  <div class="db">
+    <div class="grp">
+      <h3>Aula</h3>
+      <div class="g2">
+        <div class="field"><label for="f-nome">Nome</label><input class="input" id="f-nome" data-f="nome" value="${esc(a.nome)}" placeholder="Nome do aluno" autocomplete="off"></div>
+        <div class="field"><label for="f-instrumento">Instrumento</label><input class="input" id="f-instrumento" data-f="instrumento" list="instrs" value="${esc(a.instrumento)}" placeholder="Violão, guitarra…"></div>
+      </div>
+      <div class="g3">
+        <div class="field"><label for="f-dia">Dia</label><select class="input" id="f-dia" data-f="dia"><option value="">Sem dia fixo</option>${DIAS.map((d,i) => `<option value="${i}" ${a.dia===i?'selected':''}>${d}</option>`).join('')}</select></div>
+        <div class="field"><label for="f-hora">Horário</label><select class="input num" id="f-hora" data-f="hora"><option value="">—</option>${horaOpts.map(h => `<option ${a.hora===h?'selected':''}>${h}</option>`).join('')}</select></div>
+        <div class="field full"><label for="f-local">Local</label><select class="input" id="f-local" data-f="local">${Object.entries(LOCAIS).map(([k,l]) => `<option value="${k}" ${a.local===k?'selected':''}>${l}</option>`).join('')}</select></div>
+      </div>
+    </div>
+
+    <div class="grp">
+      <h3>Como está indo</h3>
+      <div class="field"><span class="lbl">Nível</span><div class="lvlpick" role="group" aria-label="Nível">${[1,2,3,4].map(n => `<button data-lvl="${n}" aria-pressed="${a.nivel===n}">${lvlBars(n)}${NIVEIS[n]}</button>`).join('')}</div></div>
+      <div class="field"><label for="f-musica">Música que está tocando</label><input class="input" id="f-musica" data-f="musicaAtual" value="${esc(a.musicaAtual)}" placeholder="Ex.: Pais e Filhos – Legião Urbana"></div>
+      <div class="g2">
+        <div class="field"><label for="f-esc">Escalas</label><select class="input" id="f-esc" data-f="escalaStatus"><option value="">Não anotado</option>${Object.entries({nao:'Ainda não vê',estudando:'Está estudando',ok:'Em dia'}).map(([k,l]) => `<option value="${k}" ${a.escalaStatus===k?'selected':''}>${l}</option>`).join('')}</select></div>
+        <div class="field"><label for="f-escq">Qual escala</label><input class="input" id="f-escq" data-f="escalaQual" value="${esc(a.escalaQual)}" placeholder="Ex.: Pentatônica de Lá menor"></div>
+      </div>
+      <div class="field"><label for="f-obj">Objetivos</label><input class="input" id="f-obj" data-f="objetivos" value="${esc(a.objetivos)}" placeholder="Ex.: tocar na igreja, aprender pestana"></div>
+      <div class="field"><label for="f-obs">Observações</label><textarea class="input" id="f-obs" data-f="obs" placeholder="Qualquer coisa que você queira lembrar sobre este aluno">${esc(a.obs)}</textarea></div>
+    </div>
+
+    <div class="grp">
+      <h3>Recital</h3>
+      ${['jul','out'].map(k => `<div class="rec-box">
+        <button class="switch" role="switch" data-recsw="${k}" aria-checked="${a.recital[k].on}" aria-label="Toca no recital de ${REC[k]}"></button>
+        <div class="lbl" style="font-size:14px;color:var(--ink)">Toca no recital de ${REC[k]}</div>
+        ${a.recital[k].on ? `<span></span><input class="input" data-f="recital.${k}.musica" id="f-rec-${k}" value="${esc(a.recital[k].musica)}" placeholder="Música do recital" aria-label="Música do recital de ${REC[k]}">` : ''}
+      </div>`).join('')}
+    </div>
+
+    <div class="grp">
+      <h3>Diário de aulas</h3>
+      <div class="g2" style="grid-template-columns:auto minmax(0,1fr)">
+        <input class="input" type="date" id="log-d" value="${todayISO()}" aria-label="Data da anotação" style="width:auto">
+        <div style="display:flex;gap:8px"><input class="input" id="log-t" placeholder="O que vocês viram hoje?" autocomplete="off"><button class="btn" id="log-add">${ic('plus',2.2)}</button></div>
+      </div>
+      <div class="log" id="log">${logHTML(a)}</div>
+    </div>
+
+    <div class="grp">
+      <h3>Contato e matrícula</h3>
+      <div class="g2">
+        <div class="field"><label for="f-contato">Contato</label><input class="input" id="f-contato" data-f="contato" value="${esc(a.contato)}" placeholder="Telefone do aluno ou responsável"></div>
+        <div class="field"><label for="f-inicio">Começou em</label><input class="input" type="date" id="f-inicio" data-f="inicio" value="${esc(a.inicio||'')}"></div>
+      </div>
+      ${reps.length ? `<div class="banner">${reps.length} ${reps.length===1?'aula':'aulas'} para repor. <button class="btn sm ghost" data-goto="reposicoes" style="margin-left:auto">Ver</button></div>` : ''}
+    </div>
+  </div>
+  <div class="df">
+    <span class="saved" id="savedNote">${isNew ? 'Novo aluno' : `${ic('check')}Salvo`}</span>
+    <div class="actions">
+      ${isNew ? `<button class="btn primary" data-close>Salvar aluno</button>` : `
+        <button class="btn" id="toggleAtivo">${a.ativo === false ? 'Voltar para a turma' : ic('out',1.9) + 'Aluno saiu'}</button>
+        <button class="btn danger" id="delAluno">${ic('trash',1.9)}Excluir</button>`}
+    </div>
+  </div>
+  <datalist id="instrs">${INSTR.map(i => `<option value="${i}">`).join('')}</datalist>`;
+}
+const whenText = a => `${a.dia != null && a.hora ? `${DIAS[a.dia]} às ${esc(a.hora)}` : 'Sem horário fixo'} · ${esc(LOCAIS[a.local]||'')}${a.ativo===false ? ' · saiu' : ''}`;
+function logHTML(a) {
+  const items = (a.diario||[]).map((e,i) => [e,i]).sort((x,y) => (y[0].d||'').localeCompare(x[0].d||''));
+  return items.length ? items.map(([e,i]) => `<div class="logi"><span class="d num">${fmtShort(e.d)}</span><p>${esc(e.t)}</p><button class="btn sm icon ghost" data-logdel="${i}" aria-label="Apagar anotação">${ic('x')}</button></div>`).join('')
+    : `<div class="empty-day">Anote aqui o que foi trabalhado em cada aula.</div>`;
+}
+function drawerHeadRefresh() {
+  const a = S.alunos[S.openId]; if (!a) return;
+  $('#dname').textContent = a.nome || 'Novo aluno';
+  $('#dwhen').innerHTML = whenText(a);
+  const h = $('#dhead'); h.className = 'dh ' + locCls(a);
+  h.querySelector('.av').textContent = initials(a.nome);
+}
+function touched(id) {
+  if (S.newDraft === id) { $('#savedNote').textContent = 'Novo aluno'; return; }
+  $('#savedNote').textContent = 'Salvando…';
+  saveAluno(id);
+}
+
+/* ---------------- events ---------------- */
+document.addEventListener('click', e => {
+  if (suppressClick) { suppressClick = false; e.preventDefault(); return; }
+  const t = e.target.closest('button, [data-open]');
+  if (!t) return;
+  const ds = t.dataset;
+  if (ds.go) return go(ds.go);
+  if (ds.act === 'xlsx') return exportXlsx();
+  if (ds.act === 'backup') return exportBackup();
+  if (ds.act === 'logout') { firebase.auth().signOut().then(() => location.reload()); return; }
+  if (ds.act === 'install') { window.HR_INSTALL?.prompt?.(); window.HR_INSTALL = null; return; }
+  if (ds.goto) { closeAluno(); return go(ds.goto); }
+  if (ds.open) return openAluno(ds.open);
+  if ('new' in ds) {
+    if (!ds.new) return openAluno(null);
+    const [d,h] = ds.new.split('|');
+    return openAluno(null, { dia:+d, hora:h, local: S.loc !== 'todos' ? S.loc : (+d === 0 || +d === 2 ? 'sm' : +d === 3 ? 'corredor' : 'bateria') });
+  }
+  if ('close' in ds) return closeAluno();
+  if (ds.loc) { S.loc = ds.loc; return render(); }
+  if (ds.week) { S.weekOff = ds.week === '0' ? 0 : S.weekOff + +ds.week; S.mDay = null; return render(); }
+  if (ds.mday) { S.mDay = ds.mday; return render(); }
+  if (ds.miss) {
+    const [id, date] = ds.miss.split('|');
+    const rid = 'r-' + Math.random().toString(36).slice(2,10);
+    S.repos[rid] = { alunoId:id, falta:date, motivo:'', novaData:'', novaHora:'', feita:false, criadoEm:new Date().toISOString() };
+    saveRepo(rid); render(); return toast(`Falta de ${nome(id)} anotada. Ela está em Reposições.`);
+  }
+  if (ds.unmiss) { delete S.repos[ds.unmiss]; del('reposicoes', ds.unmiss); return render(); }
+  if (ds.rdone) { S.repos[ds.rdone].feita = true; if (!S.repos[ds.rdone].novaData) S.repos[ds.rdone].novaData = todayISO(); saveRepo(ds.rdone); render(); return toast('Reposição marcada como feita.'); }
+  if (ds.rundone) { S.repos[ds.rundone].feita = false; saveRepo(ds.rundone); return render(); }
+  if (ds.rdel) { delete S.repos[ds.rdel]; del('reposicoes', ds.rdel); return render(); }
+  if (ds.rectab) { S.recTab = ds.rectab; return render(); }
+  if (ds.sort) { const k = ds.sort; return setSort(k, S.sort.key === k ? -S.sort.dir : 1); }
+  if (ds.alview) { S.alView = ds.alview; try { localStorage.setItem('horarios-hr-alview', S.alView); } catch {} return render(); }
+  if (ds.recok) { const k = S.recTab || currentRecital(); const r = S.alunos[ds.recok].recital[k]; r.ok = !r.ok; saveAluno(ds.recok, true); return render(); }
+  if (ds.recoff) { const k = S.recTab || currentRecital(); S.alunos[ds.recoff].recital[k].on = false; saveAluno(ds.recoff, true); return render(); }
+  if (ds.recmove) {
+    const [id, dir] = ds.recmove.split('|'); const k = S.recTab || currentRecital();
+    const list = ativos().filter(([,a]) => recOn(a,k)).sort((x,y) => (x[1].recital[k].ordem||999) - (y[1].recital[k].ordem||999) || (x[1].nome||'').localeCompare(y[1].nome||''));
+    const i = list.findIndex(([x]) => x === id), j = i + +dir;
+    if (j < 0 || j >= list.length) return;
+    [list[i], list[j]] = [list[j], list[i]];
+    list.forEach(([x,a], n) => { if (a.recital[k].ordem !== n+1) { a.recital[k].ordem = n+1; saveAluno(x, true); } });
+    return render();
+  }
+  if ('recadd' in ds) {
+    const id = $('#recadd').value; if (!id) return;
+    const k = S.recTab || currentRecital(); const a = S.alunos[id];
+    a.recital = a.recital || {}; a.recital[k] = Object.assign({musica:'',ok:false}, a.recital[k]||{}, { on:true, ordem: 999 });
+    saveAluno(id, true); render(); return $(`[data-recsong="${id}"]`)?.focus();
+  }
+  if (t.id === 'recClear') {
+    if (!t.classList.contains('armed')) { t.classList.add('armed'); t.textContent = 'Toque de novo para confirmar'; setTimeout(() => { t.classList.remove('armed'); t.textContent = 'Encerrar recital e limpar lista'; }, 4000); return; }
+    const k = S.recTab || currentRecital();
+    ativos().forEach(([id,a]) => { if (recOn(a,k)) { a.recital[k] = {on:false,musica:'',ok:false,ordem:0}; saveAluno(id, true); } });
+    render(); return toast(`Lista do recital de ${REC[k].toLowerCase()} limpa.`);
+  }
+  if (t.id === 'ra-add') {
+    const id = $('#ra-aluno').value; if (!id) return toast('Escolha o aluno que faltou.');
+    const rid = 'r-' + Math.random().toString(36).slice(2,10);
+    S.repos[rid] = { alunoId:id, falta:$('#ra-data').value, motivo:$('#ra-motivo').value.trim(), novaData:'', novaHora:'', feita:false, criadoEm:new Date().toISOString() };
+    saveRepo(rid); render(); return toast('Reposição adicionada.');
+  }
+  // drawer actions
+  const id = S.openId, a = id && S.alunos[id];
+  if (a) {
+    if (ds.lvl) { a.nivel = a.nivel === +ds.lvl ? 0 : +ds.lvl; document.querySelectorAll('[data-lvl]').forEach(b => b.setAttribute('aria-pressed', +b.dataset.lvl === a.nivel)); touched(id); return render(); }
+    if (ds.recsw) { const r = a.recital[ds.recsw]; r.on = !r.on; if (r.on) r.ordem = 999; touched(id); drawRender(); if (r.on) $(`#f-rec-${ds.recsw}`)?.focus(); return render(); }
+    if (t.id === 'log-add') return addLog();
+    if (ds.logdel != null) { a.diario.splice(+ds.logdel, 1); $('#log').innerHTML = logHTML(a); return touched(id); }
+    if (t.id === 'toggleAtivo') { a.ativo = a.ativo === false; saveAluno(id, true); toast(a.ativo ? `${a.nome} voltou para a turma.` : `${a.nome} saiu da grade. A ficha fica em Ex-alunos.`); return closeAluno(); }
+    if (t.id === 'delAluno') {
+      if (!t.classList.contains('armed')) { t.classList.add('armed'); t.textContent = 'Excluir de vez?'; setTimeout(() => { if (t.isConnected) { t.classList.remove('armed'); t.innerHTML = ic('trash',1.9) + 'Excluir'; } }, 4000); return; }
+      clearTimeout(timers[id]); dirty.delete(id);
+      const n = a.nome; delete S.alunos[id]; del('alunos', id);
+      Object.entries(S.repos).forEach(([rid,r]) => { if (r.alunoId === id) { delete S.repos[rid]; del('reposicoes', rid); } });
+      S.openId = null; closeAluno(); return toast(`${n} foi excluído.`);
+    }
+  }
+});
+function addLog() {
+  const a = S.alunos[S.openId]; const t = $('#log-t').value.trim(); if (!t) return;
+  a.diario = a.diario || []; a.diario.push({ d: $('#log-d').value || todayISO(), t });
+  $('#log-t').value = ''; $('#log').innerHTML = logHTML(a); touched(S.openId);
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && S.openId) closeAluno();
+  if (e.key === 'Enter' && e.target.id === 'log-t') addLog();
+});
+$('#scrim').addEventListener('click', closeAluno);
+
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.id === 'q') { S.q = t.value; const pos = t.selectionStart; render(); const q = $('#q'); q.focus(); q.setSelectionRange(pos,pos); return; }
+  if (t.dataset.recsong) { const k = S.recTab || currentRecital(); S.alunos[t.dataset.recsong].recital[k].musica = t.value; saveAluno(t.dataset.recsong); return; }
+  if (t.dataset.f && S.openId) {
+    const a = S.alunos[S.openId]; const f = t.dataset.f;
+    let v = t.value;
+    if (f === 'dia') v = v === '' ? null : +v;
+    if (f.includes('.')) { const [p,k,c] = f.split('.'); a[p][k][c] = v; } else a[f] = v;
+    if (['nome','dia','hora','local'].includes(f)) drawerHeadRefresh();
+    touched(S.openId);
+    if (t.tagName === 'SELECT' || f === 'nome' || f === 'instrumento') render();
+  }
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.id === 'recdate') { const k = S.recTab || currentRecital(); S.config.recitais = S.config.recitais || {}; S.config.recitais[k] = { data: t.value }; saveConfig(); return render(); }
+  if (t.id === 'sortsel') { const [k, d] = t.value.split('|'); return setSort(k, +d); }
+  if (t.dataset.rdate) { S.repos[t.dataset.rdate].novaData = t.value; saveRepo(t.dataset.rdate); return; }
+  if (t.dataset.rtime) { S.repos[t.dataset.rtime].novaHora = t.value; saveRepo(t.dataset.rtime); return; }
+});
+
+/* ---------------- export ---------------- */
+let xlsxLoading;
+function loadXLSX() {
+  if (window.XLSX) return Promise.resolve(window.XLSX);
+  return xlsxLoading ||= new Promise((res, rej) => { const s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'; s.onload = () => res(window.XLSX); s.onerror = rej; document.head.appendChild(s); });
+}
+async function exportXlsx() {
+  if (!S.dl) return;
+  try {
+    const X = await loadXLSX();
+    const act = ativos();
+    const hours = [...new Set([8,9,10,11,12,13,14,15,16,17,18,19,20, ...act.filter(([,a]) => a.hora).map(([,a]) => hourOf(a.hora))])].sort((a,b) => a-b);
+    const grade = [['Horário', ...DIAS]];
+    hours.forEach(h => grade.push([`${pad(h)}:00`, ...DIAS.map((_,d) => act.filter(([,a]) => a.dia === d && hourOf(a.hora) === h).map(([,a]) => `${a.nome} (${a.instrumento}) · ${LOCAIS[a.local]||''}`).join('\n'))]));
+    const alunos = [['Nome','Instrumento','Dia','Horário','Local','Nível','Música atual','Escalas','Qual escala','Objetivos','Observações','Contato','Começou em','Situação']];
+    Object.values(S.alunos).sort((x,y) => (x.nome||'').localeCompare(y.nome||'')).forEach(a => alunos.push([a.nome,a.instrumento,a.dia!=null?DIAS[a.dia]:'',a.hora,LOCAIS[a.local]||'',NIVEIS[a.nivel]||'',a.musicaAtual,ESC[a.escalaStatus]||'',a.escalaQual,a.objetivos,a.obs,a.contato,a.inicio,a.ativo===false?'Saiu':'Ativo']));
+    const wb = X.utils.book_new();
+    const add = (rows, name, cols) => { const ws = X.utils.aoa_to_sheet(rows); ws['!cols'] = cols.map(w => ({wch:w})); X.utils.book_append_sheet(wb, ws, name); };
+    add(grade, 'Grade', [9,26,26,26,26,26,26]);
+    add(alunos, 'Alunos', [18,12,10,8,14,13,28,18,22,24,36,18,12,8]);
+    Object.entries(REC).forEach(([k,l]) => {
+      const rows = [['Ordem','Aluno','Instrumento','Música','Confirmado']];
+      act.filter(([,a]) => recOn(a,k)).sort((x,y) => (x[1].recital[k].ordem||999)-(y[1].recital[k].ordem||999)).forEach(([,a],i) => rows.push([i+1,a.nome,a.instrumento,a.recital[k].musica,a.recital[k].ok?'Sim':'Não']));
+      add(rows, 'Recital ' + l, [7,18,12,30,11]);
+    });
+    const reps = [['Aluno','Faltou em','Motivo','Nova data','Novo horário','Situação']];
+    Object.values(S.repos).forEach(r => reps.push([nome(r.alunoId), r.falta, r.motivo, r.novaData, r.novaHora, r.feita?'Feita':'Pendente']));
+    add(reps, 'Reposições', [18,12,24,12,12,10]);
+    const buf = X.write(wb, { type:'array', bookType:'xlsx' });
+    await S.dl.save({ filename:`Horarios_HR_${todayISO()}.xlsx`, data:new Uint8Array(buf) });
+    toast('Planilha salva.');
+  } catch (err) {
+    if (err?.code === 'declined') return;
+    toast('Não consegui gerar a planilha agora.');
+  }
+}
+async function exportBackup() {
+  if (!S.dl) return;
+  const data = JSON.stringify({ app: 'horarios-hr', versao: 1, exportadoEm: new Date().toISOString(), alunos: S.alunos, reposicoes: S.repos, config: S.config }, null, 1);
+  try { await S.dl.save({ filename: `backup-horarios-hr-${todayISO()}.json`, data }); toast('Backup salvo.'); }
+  catch (err) { if (err?.code !== 'declined') toast('Não consegui salvar o backup.'); }
+}
+async function importBackup(file) {
+  let o;
+  try { o = JSON.parse(await file.text()); } catch { return toast('Esse arquivo não é um backup válido.'); }
+  const al = o && typeof o.alunos === 'object' ? o.alunos : null;
+  if (!al) return toast('Esse arquivo não é um backup do Horários HR.');
+  const rp = o.reposicoes && typeof o.reposicoes === 'object' ? o.reposicoes : {};
+  const ok = id => /^[A-Za-z0-9_.~:@+-]{1,120}$/.test(id);
+  const jobs = [];
+  for (const [id, a] of Object.entries(al)) if (ok(id) && a && typeof a === 'object' && typeof a.nome === 'string') { S.alunos[id] = clone(a); jobs.push(write('alunos', id, clone(a))); }
+  for (const [id, r] of Object.entries(rp)) if (ok(id) && r && typeof r === 'object' && typeof r.alunoId === 'string') { S.repos[id] = clone(r); jobs.push(write('reposicoes', id, clone(r))); }
+  if (o.config && typeof o.config === 'object') { S.config = clone(o.config); jobs.push(write('config', 'geral', clone(o.config))); }
+  await Promise.all(jobs);
+  render();
+  toast(`Backup importado: ${Object.keys(al).length} alunos.`);
+}
+document.addEventListener('change', e => { if (e.target.id === 'importFile' && e.target.files?.[0]) { importBackup(e.target.files[0]); e.target.value = ''; } });
+
+/* ---------------- toast ---------------- */
+let tt;
+function toast(msg, label, fn) {
+  const el = $('#toast');
+  el.textContent = '';
+  const sp = document.createElement('span'); sp.textContent = msg; el.appendChild(sp);
+  if (label && fn) {
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = label;
+    b.addEventListener('click', ev => { ev.stopPropagation(); el.classList.remove('show','act'); fn(); });
+    el.appendChild(b);
+  }
+  el.classList.toggle('act', !!(label && fn));
+  el.classList.add('show'); clearTimeout(tt);
+  tt = setTimeout(() => el.classList.remove('show','act'), label ? 6000 : 2600);
+}
+
+/* ---------------- drag to move (grade) ---------------- */
+// Mouse: press and move. Touch: press and hold ~0.3s, then move. Dropping on a taken slot swaps the two students.
+let drag = null, suppressClick = false;
+function cellAt(x, y) { return document.elementFromPoint(x, y)?.closest?.('.gc[data-cell]') || null; }
+function dragBegin(id, el, x, y) {
+  const r = el.getBoundingClientRect();
+  drag = { id, el, ox: x - r.left, oy: y - r.top, active: false, x0: x, y0: y, target: null, timer: null };
+}
+function dragStart() {
+  if (!drag || drag.active) return;
+  drag.active = true;
+  const g = drag.el.cloneNode(true);
+  const r = drag.el.getBoundingClientRect();
+  g.classList.add('drag-ghost'); g.removeAttribute('data-open'); g.removeAttribute('data-drag');
+  g.style.width = r.width + 'px'; g.style.height = r.height + 'px';
+  document.body.appendChild(g); drag.ghost = g;
+  drag.el.classList.add('lifting'); document.body.classList.add('dragging');
+  try { navigator.vibrate?.(12); } catch {}
+}
+function dragMove(x, y) {
+  if (!drag?.active) return;
+  drag.ghost.style.transform = `translate(${x - drag.ox}px, ${y - drag.oy}px)`;
+  const c = cellAt(x, y);
+  if (c !== drag.target) {
+    drag.target?.classList.remove('drop-ok','drop-no');
+    drag.target = c;
+    if (c) c.classList.add(c.classList.contains('off') ? 'drop-no' : 'drop-ok');
+  }
+  const m = 56;
+  if (y < m) window.scrollBy(0, -12); else if (y > innerHeight - m) window.scrollBy(0, 12);
+}
+function dragEnd(cancel) {
+  if (!drag) return;
+  clearTimeout(drag.timer);
+  const d = drag; drag = null;
+  if (!d.active) return;
+  suppressClick = true; setTimeout(() => suppressClick = false, 400);
+  d.ghost?.remove(); d.el.classList.remove('lifting'); document.body.classList.remove('dragging');
+  d.target?.classList.remove('drop-ok','drop-no');
+  if (cancel || !d.target) return render();
+  const [dd, hh] = d.target.dataset.cell.split('|').map(Number);
+  if (isOff(dd, hh)) { render(); return toast('Sábado à tarde fica sem aulas.'); }
+  moveAluno(d.id, dd, hh);
+}
+function moveAluno(id, dia, h) {
+  const a = S.alunos[id]; if (!a) return;
+  const before = { dia: a.dia, hora: a.hora };
+  if (before.dia === dia && hourOf(before.hora) === h) return render();
+  const mins = (a.hora || '').split(':')[1] || '00';
+  const other = ativos().find(([k,b]) => k !== id && b.dia === dia && b.hora && hourOf(b.hora) === h);
+  a.dia = dia; a.hora = `${pad(h)}:${mins}`; saveAluno(id, true);
+  let oid = null, obefore = null;
+  if (other) {
+    const [k, o] = other; oid = k; obefore = { dia: o.dia, hora: o.hora };
+    o.dia = before.dia; o.hora = before.hora ? `${pad(hourOf(before.hora))}:${(o.hora.split(':')[1] || '00')}` : '';
+    saveAluno(k, true);
+  }
+  render();
+  const msg = other ? `${a.nome} e ${other[1].nome} trocaram de horário.` : `${a.nome}: ${DIAS[dia]} às ${a.hora}.`;
+  toast(msg, 'Desfazer', () => {
+    Object.assign(S.alunos[id], before); saveAluno(id, true);
+    if (oid && S.alunos[oid]) { Object.assign(S.alunos[oid], obefore); saveAluno(oid, true); }
+    render();
+  });
+}
+document.addEventListener('pointerdown', e => {
+  if (e.pointerType !== 'mouse' || e.button !== 0) return;
+  const el = e.target.closest('[data-drag]'); if (!el) return;
+  e.preventDefault();
+  dragBegin(el.dataset.drag, el, e.clientX, e.clientY);
+});
+document.addEventListener('pointermove', e => {
+  if (!drag || e.pointerType !== 'mouse') return;
+  if (!drag.active && Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) > 5) dragStart();
+  dragMove(e.clientX, e.clientY);
+});
+document.addEventListener('pointerup', e => { if (e.pointerType === 'mouse') dragEnd(false); });
+document.addEventListener('touchstart', e => {
+  const el = e.target.closest('[data-drag]'); if (!el || e.touches.length > 1) return;
+  const t = e.touches[0];
+  dragBegin(el.dataset.drag, el, t.clientX, t.clientY);
+  drag.timer = setTimeout(() => { if (drag) { dragStart(); dragMove(t.clientX, t.clientY); } }, 320);
+}, { passive: true });
+document.addEventListener('touchmove', e => {
+  if (!drag) return;
+  const t = e.touches[0];
+  if (!drag.active) {
+    if (Math.hypot(t.clientX - drag.x0, t.clientY - drag.y0) > 10) { clearTimeout(drag.timer); drag = null; }
+    return;
+  }
+  e.preventDefault();
+  dragMove(t.clientX, t.clientY);
+}, { passive: false });
+document.addEventListener('touchend', e => { if (drag?.active) e.preventDefault(); dragEnd(false); }, { passive: false });
+document.addEventListener('touchcancel', () => dragEnd(true));
+document.addEventListener('contextmenu', e => { if (e.target.closest('[data-drag]')) e.preventDefault(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && drag) dragEnd(true); });
+
+/* ---------------- mobile week swap ---------------- */
+const mq = matchMedia('(max-width:860px)');
+const _render = render;
+render = function () {
+  _render();
+  const m = $('#mweek'); if (m) { m.style.display = mq.matches ? 'flex' : 'none'; }
+};
+mq.addEventListener?.('change', () => render());
+
+const h = (location.hash || '').slice(1);
+if (VIEWS.some(([k]) => k === h) || h === 'ajustes') S.view = h;
+boot();
+})();
+</script>

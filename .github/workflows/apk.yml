@@ -1,0 +1,60 @@
+name: APK Android
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apk
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - run: npm ci
+      - run: python3 scripts/build.py
+      - name: Criar o projeto Android
+        run: |
+          npx cap add android
+          npx capacitor-assets generate --android
+          npx cap sync android
+      - name: Número da versão
+        run: |
+          sed -i "s/versionCode 1$/versionCode ${{ github.run_number }}/" android/app/build.gradle
+          sed -i "s/versionName \"1.0\"/versionName \"1.0.${{ github.run_number }}\"/" android/app/build.gradle
+          grep -E "versionCode|versionName" android/app/build.gradle
+      # The same debug key on every build lets a new APK install over the old one.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: horarios-hr-debug-keystore-v1
+      - name: Gerar o APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+      - run: cp android/app/build/outputs/apk/debug/app-debug.apk HorariosHR.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: HorariosHR-apk
+          path: HorariosHR.apk
+      - name: Publicar na página de versões
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete apk --yes --cleanup-tag || true
+          gh release create apk HorariosHR.apk \
+            --title "Horários HR para Android (versão 1.0.${{ github.run_number }})" \
+            --notes "Baixe o arquivo HorariosHR.apk pelo celular e abra para instalar. Gerado automaticamente a partir do commit ${{ github.sha }}."

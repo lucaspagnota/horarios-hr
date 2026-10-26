@@ -1,0 +1,19 @@
+{
+  "name": "horarios-hr",
+  "private": true,
+  "version": "1.0.0",
+  "description": "App de horários de aula do Lucas: grade, alunos, recital e reposições.",
+  "scripts": {
+    "build": "python3 scripts/build.py",
+    "icons": "python3 scripts/make_icons.py"
+  },
+  "dependencies": {
+    "firebase": "10.14.1"
+  },
+  "devDependencies": {
+    "@capacitor/android": "6.2.1",
+    "@capacitor/assets": "3.0.5",
+    "@capacitor/cli": "6.2.1",
+    "@capacitor/core": "6.2.1"
+  }
+}

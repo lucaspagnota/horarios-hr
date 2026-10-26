@@ -1,0 +1,8 @@
+{
+  "appId": "br.com.lucaspagnota.horarioshr",
+  "appName": "Horários HR",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#F4F5F9"
+  }
+}
