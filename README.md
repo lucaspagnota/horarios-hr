@@ -14,7 +14,7 @@ App das aulas de música do Lucas: grade da semana, fichas dos alunos (música a
 | `web/` | Manifest do app instalável, service worker e ícones. |
 | `assets/` | Ícone e tela de abertura usados no APK. |
 | `firebase/firestore.rules` | Regras do banco: só a conta do Lucas lê e grava. |
-| `.github/workflows/` | `site.yml` publica o site no GitHub Pages; `apk.yml` gera o APK e atualiza a versão "apk". |
+| `.github/workflows/` | `site.yml` monta o site e publica na branch `gh-pages` (GitHub Pages); `apk.yml` gera o APK e atualiza a versão "apk". |
 
 A cada `push` na `main`, o GitHub publica o site e gera um APK novo.
 
