@@ -1,6 +1,6 @@
 # Horários HR
 
-App das aulas de música do Lucas: grade da semana, fichas dos alunos (música atual, escalas, nível, observações, diário de aulas), programa do recital de julho e outubro, e reposições.
+App das aulas de música do Lucas: grade da semana, fichas dos alunos (música atual, escalas, nível, observações, diário de aulas), repertório de cada instrumento na ordem em que ele ensina, programa do recital de julho e outubro, e reposições.
 
 - **Site:** https://lucaspagnota.github.io/horarios-hr/ (abre no computador e no celular; no Android dá para instalar pelo menu do navegador)
 - **APK para Android:** https://github.com/lucaspagnota/horarios-hr/releases/download/apk/HorariosHR.apk
@@ -14,6 +14,8 @@ App das aulas de música do Lucas: grade da semana, fichas dos alunos (música a
 | `web/` | Manifest do app instalável, service worker e ícones. |
 | `assets/` | Ícone e tela de abertura usados no APK. |
 | `firebase/firestore.rules` | Regras do banco: só a conta do Lucas lê e grava. |
+| `firebase/storage.rules` | Regras dos arquivos do repertório (Firebase Storage): só a conta do Lucas. |
+| `scripts/repertorio.py` | Lê a pasta HR-LUCAS do computador, converte Word para PDF e gera a lista do repertório. |
 | `.github/workflows/` | `site.yml` monta o site e publica na branch `gh-pages` (GitHub Pages); `apk.yml` gera o APK e atualiza a versão "apk". |
 
 A cada `push` na `main`, o GitHub publica o site e gera um APK novo.
@@ -24,6 +26,15 @@ A cada `push` na `main`, o GitHub publica o site e gera um APK novo.
 - Sem ele, o app guarda os dados só no aparelho.
 - Em **Ajustes** dá para exportar e importar um backup `.json` e baixar a planilha `.xlsx`.
 - Nenhum dado de aluno fica neste repositório.
+
+## Repertório
+
+As sequências saem das pastas do computador (HR-LUCAS). O número no começo do nome do arquivo é a ordem em que a música é ensinada (`3-O Mar Serenou.docx`, `(MUSICA 1) Marcha.pdf`); arquivos sem número entram como "fora da sequência". A pasta CIFRAS vira uma biblioteca de busca, sem ordem.
+
+1. `python3 scripts/repertorio.py "<caminho da pasta HR-LUCAS>"` converte os Word para PDF em `APP HORARIOS AULAS/Repertório/PDFs` (os originais não mudam) e grava `APP HORARIOS AULAS/Repertório/repertorio.json`. Precisa do LibreOffice.
+2. No app, no computador: **Ajustes > Repertório > Enviar pasta HR-LUCAS**. O app manda para o Firebase Storage só os arquivos que ainda não estão lá e salva as sequências no Firestore.
+
+Os arquivos nunca vão para este repositório (ele é público).
 
 ## Rodar no computador
 

@@ -320,6 +320,27 @@ body.locked .shell{grid-template-columns:minmax(0,1fr)}
 .toast.act{pointer-events:auto}
 .toast button{border:0;background:none;color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px;padding:2px 0}
 
+/* Repertório */
+.rep-sec{padding:6px 0 4px}
+.rep-sec>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:10px;padding:12px 18px;font-weight:700;font-size:15px}
+.rep-sec>summary::-webkit-details-marker{display:none}
+.rep-sec>summary .chev{width:18px;height:18px;color:var(--ink-3);transition:rotate .15s}
+.rep-sec[open]>summary .chev{rotate:180deg}
+.rep-sec>summary .badge{margin-left:auto}
+.ritem{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 18px;border-top:1px solid var(--line)}
+.ritem .n{font-size:13px;font-weight:700;color:var(--ink-3);text-align:right}
+.ritem .t{font-weight:600;font-size:14.5px;overflow-wrap:anywhere}
+.ritem .sub2{display:flex;gap:5px;flex-wrap:wrap;margin-top:3px}
+.ritem .who{border:0;cursor:pointer}
+.ritem.extra .n{font-weight:400}
+.rep-sep{padding:8px 18px 4px;font-size:12px;font-weight:600;color:var(--ink-3);border-top:1px solid var(--line);text-transform:uppercase;letter-spacing:.04em}
+.rep-box{display:flex;flex-direction:column;gap:10px;padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--surface-2)}
+.rep-now{display:flex;align-items:center;gap:10px}
+.rep-now .k{font-size:12px;font-weight:600;color:var(--ink-3)}
+.rep-now .t{font-weight:700;font-size:15px;overflow-wrap:anywhere}
+.rep-act{display:flex;gap:8px;flex-wrap:wrap}
+.rep-prog{font-size:13px;color:var(--ink-2)}
+
 @media (max-width:1100px){
   .week{grid-template-columns:repeat(3,minmax(0,1fr))}
   .rec-layout{grid-template-columns:minmax(0,1fr)}
@@ -338,8 +359,8 @@ body.locked .shell{grid-template-columns:minmax(0,1fr)}
   .lrow .mob{display:block;font-size:12.5px;color:var(--ink-2);margin-top:2px;overflow-wrap:anywhere}
   .lrow .loc{display:none}
   .lrow .tg{flex-direction:column;align-items:flex-end}
-  .tabbar{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:30;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:6px max(6px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px))}
-  .tabbar button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;font-size:11px;font-weight:600;color:var(--ink-3);position:relative;border-radius:10px}
+  .tabbar{display:grid;grid-template-columns:repeat(6,1fr);position:fixed;left:0;right:0;bottom:0;z-index:30;background:color-mix(in srgb,var(--surface) 92%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:6px max(6px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px))}
+  .tabbar button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 1px;font-size:10.5px;font-weight:600;color:var(--ink-3);position:relative;border-radius:10px}
   .tabbar svg{width:22px;height:22px}
   .tabbar button[aria-current="page"]{color:var(--ink)}
   .tabbar .badge{position:absolute;top:0;left:calc(50% + 6px);min-width:17px;height:17px;font-size:10px;padding:0 4px}
@@ -427,7 +448,7 @@ const DIAS_C = ['Seg','Ter','Qua','Qui','Sex','Sáb'];
 const LOCAIS = { sm:'São Manuel', bateria:'Sala Bateria', corredor:'Sala Corredor' };
 const NIVEIS = ['', 'Iniciante', 'Básico', 'Intermediário', 'Avançado'];
 const ESC = { nao:'Escalas: ainda não', estudando:'Estudando escalas', ok:'Escalas em dia' };
-const INSTR = ['Violão','Guitarra','Violino','Baixo','Ukulele','Canto','Teclado','Bateria','Cavaquinho'];
+const INSTR = ['Violão','Guitarra','Violino','Baixo','Cavaquinho','Viola caipira','Ukulele','Canto','Teclado','Bateria'];
 const REC = { jul:'Julho', out:'Outubro' };
 const MESES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
 
@@ -450,6 +471,8 @@ const I = {
   lista:'<path d="M8.5 6h12M8.5 12h12M8.5 18h12"/><circle cx="4.2" cy="6" r="1" fill="currentColor"/><circle cx="4.2" cy="12" r="1" fill="currentColor"/><circle cx="4.2" cy="18" r="1" fill="currentColor"/>',
   gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>',
   up2:'<path d="M12 21V9m0 0 4 4m-4-4-4 4M5 3h14"/>',
+  repertorio:'<path d="M4 4.5A1.5 1.5 0 0 1 5.5 3H19v15H5.5A1.5 1.5 0 0 0 4 19.5z"/><path d="M4 19.5A1.5 1.5 0 0 0 5.5 21H19v-3"/><path d="M12.5 6.5v6.2"/><circle cx="10.6" cy="12.8" r="1.9"/><path d="M12.5 6.5l2.8.9"/>',
+  open:'<path d="M14 4h6v6M20 4l-9 9M18 14v4.5A1.5 1.5 0 0 1 16.5 20h-11A1.5 1.5 0 0 1 4 18.5v-11A1.5 1.5 0 0 1 5.5 6H10"/>',
   out:'<path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H3"/>',
 };
 // The HR logo. This is the only copy: scripts/make_icons.js reads the staff and letters from here for the app icons.
@@ -458,7 +481,7 @@ const ic = (n, sw = 2) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentC
 const icStar = `<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">${I.recital}</svg>`;
 
 const VIEWS = [
-  ['grade','Grade'], ['semana','Semana'], ['alunos','Alunos'], ['recital','Recital'], ['reposicoes','Reposições']
+  ['grade','Grade'], ['semana','Semana'], ['alunos','Alunos'], ['repertorio','Repertório'], ['recital','Recital'], ['reposicoes','Reposições']
 ];
 
 /* ---------------- modes ---------------- */
@@ -470,8 +493,9 @@ const IN_APK = !!window.Capacitor?.isNativePlatform?.();
 
 /* ---------------- state ---------------- */
 const S = {
-  alunos: {}, repos: {}, config: {},
+  alunos: {}, repos: {}, config: {}, rep: {},
   loaded: { alunos:false, repos:false },
+  repSel: null, repQ: '', repOpen: {}, storage: null,
   db: null, offline: false,
   view: 'grade', loc: 'todos', q: '', weekOff: 0, mDay: null,
   recTab: null, openId: null, newDraft: null, alView: 'cards',
@@ -562,7 +586,7 @@ function newId(n) {
 /* ---------------- persistence ---------------- */
 const chains = {}, timers = {}, dirty = new Set();
 const LS_KEY = 'horarios-hr-offline';
-function saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify({alunos:S.alunos, repos:S.repos, config:S.config})); } catch {} }
+function saveLocal() { try { localStorage.setItem(LS_KEY, JSON.stringify({alunos:S.alunos, repos:S.repos, config:S.config, rep:S.rep})); } catch {} }
 function write(col, id, data) {
   if (!S.db) { saveLocal(); return Promise.resolve(); }
   const key = col + '/' + id;
@@ -607,6 +631,7 @@ async function firebaseBoot() {
     const user = await new Promise(res => { const off = firebase.auth().onAuthStateChanged(u => { off(); res(u); }); });
     if (!user) { S.needLogin = true; render(); return null; }
     S.needLogin = false; S.user = { email: user.email };
+    if (firebase.storage) S.storage = firebase.storage();
     return firebase.firestore();
   } catch (e) {
     S.fbError = true; S.loaded.alunos = true; render(); return null;
@@ -627,7 +652,7 @@ async function boot() {
   if (STANDALONE) S.dl = IN_APK ? null : browserDl;
   if (!db) {
     S.offline = true;
-    try { const o = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); if (o) { S.alunos = o.alunos||{}; S.repos = o.repos||{}; S.config = o.config||{}; } } catch {}
+    try { const o = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); if (o) { S.alunos = o.alunos||{}; S.repos = o.repos||{}; S.config = o.config||{}; S.rep = o.rep||{}; } } catch {}
     S.loaded.alunos = S.loaded.repos = true; render(); return;
   }
   S.db = db;
@@ -642,6 +667,10 @@ async function boot() {
     const next = {}; snap.docs.forEach(d => next[d.id] = clone(d.data()));
     S.repos = next; S.loaded.repos = true; render();
   }, e => { snapError(e); S.loaded.repos = true; render(); });
+  db.collection('repertorio').onSnapshot(snap => {
+    const next = {}; snap.docs.forEach(d => next[d.id] = d.data());
+    S.rep = next; render();
+  }, () => {});
   db.doc('config/geral').onSnapshot(snap => { if (snap.exists) { S.config = clone(snap.data()); render(); } }, () => {});
   if (!STANDALONE) claude.use('downloads').then(dl => { S.dl = dl; render(); }).catch(() => {});
 }
@@ -666,7 +695,7 @@ function render() {
   if (S.needLogin) { v.innerHTML = viewLogin(); return; }
   const loading = !S.loaded.alunos;
   if (loading) { v.innerHTML = `<div class="head"><div><div class="eyebrow">Horários HR</div><h1>Carregando seus horários…</h1><p class="sub">Seus alunos, a grade da semana, o recital e as reposições aparecem aqui em instantes.</p></div></div>`; return; }
-  const fns = { grade:viewGrade, semana:viewSemana, alunos:viewAlunos, recital:viewRecital, reposicoes:viewRepos, ajustes:viewAjustes };
+  const fns = { grade:viewGrade, semana:viewSemana, alunos:viewAlunos, repertorio:viewRepertorio, recital:viewRecital, reposicoes:viewRepos, ajustes:viewAjustes };
   v.classList.toggle('grade-view', S.view === 'grade');
   const banner = S.fbError ? 'Não consegui conectar ao Firebase. Confira a internet e abra o app de novo.'
     : S.offline ? (STANDALONE ? 'Por enquanto os dados ficam só neste aparelho. Em Ajustes você importa um backup.' : 'Abra este app pelo link do Claude para salvar seus dados na nuvem. Aqui ele está guardando só neste navegador.') : '';
@@ -730,6 +759,13 @@ function viewAjustes() {
       <label class="btn" for="importFile" style="cursor:pointer">${ic('up2')}Importar backup</label>
       <input type="file" id="importFile" accept="application/json,.json" hidden>
       <p class="sub" style="margin:0;font-size:12.5px">Importar junta o backup com o que já está aqui. Um aluno que já existe é substituído pela versão do backup.</p>
+    </div>
+    <div class="panel side-card">
+      <h2>Repertório</h2>
+      <p class="sub" style="margin:0">${Object.keys(S.rep).length ? `${repDocs().reduce((n,[,d]) => n + nItens(d), 0)} músicas e materiais em ${Object.keys(S.rep).length} pastas.` : 'Ainda vazio.'} Para atualizar, escolha a pasta HR-LUCAS: o app lê a lista que o Claude preparou e envia só os arquivos novos.</p>
+      ${IN_APK ? `<p class="sub" style="margin:0">Envie pelo computador. No celular os arquivos já abrem.</p>` : `<label class="btn" for="repDir" style="cursor:pointer">${ic('up2')}Enviar pasta HR-LUCAS</label>
+      <input type="file" id="repDir" webkitdirectory multiple hidden>`}
+      <p class="rep-prog" id="repProg" role="status">${esc(S.repProg || '')}</p>
     </div>
     <div class="panel side-card">
       <h2>Onde ficam os dados</h2>
@@ -927,6 +963,160 @@ function viewAlunos() {
   ${ex.length ? `<div class="section-t"><h2>Ex-alunos</h2><span class="badge num">${ex.length}</span><div class="line"></div></div>${block(ex, true)}` : ''}`;
 }
 
+/* ----- Repertório ----- */
+const na = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+const repDocs = () => Object.entries(S.rep).sort((x,y) => (x[1].ordem ?? 99) - (y[1].ordem ?? 99));
+const repSec = (iid, sid) => (S.rep[iid]?.secoes || []).find(s => s.id === sid) || null;
+const nItens = d => (d.secoes || []).reduce((n, s) => n + (s.itens?.length || 0), 0);
+// Catalog entries that fit the student's instrument ("Violão" -> "Violão e guitarra"). Infantil fits everyone.
+function repDocsFor(instr) {
+  const k = na(instr);
+  const all = repDocs().filter(([id]) => id !== 'cifras' && id !== 'teoria');
+  const fit = all.filter(([id,d]) => id === 'infantil' || (k && (d.instrumentos || []).some(i => na(i) === k || k.includes(na(i)) || na(i).includes(k))));
+  return fit.length > 1 ? fit : all;
+}
+function alunosNo(itemId) {
+  return ativos().filter(([,a]) => a.rep?.item === itemId);
+}
+const fmtN = n => n == null ? '' : String(n);
+function repRow(it, extra, ctx = '') {
+  const who = alunosNo(it.id);
+  return `<div class="ritem ${extra ? 'extra' : ''}">
+    <div class="n num">${extra ? '·' : esc(fmtN(it.n))}</div>
+    <div style="min-width:0"><div class="t">${esc(it.t)}</div>${ctx ? `<div class="sub" style="font-size:12.5px;margin:2px 0 0">${esc(ctx)}</div>` : ''}
+      ${it.tom || who.length ? `<div class="sub2">${it.tom ? `<span class="pill">Tom ${esc(it.tom)}</span>` : ''}${who.map(([id,a]) => `<button class="pill who" style="--c:var(--bat)" data-open="${id}">${esc(a.nome)}</button>`).join('')}</div>` : ''}
+    </div>
+    ${it.f ? `<button class="btn sm" data-file="${esc(it.f)}">${ic('open',1.9)}<span>Abrir</span></button>` : '<span></span>'}
+  </div>`;
+}
+function viewRepertorio() {
+  const docs = repDocs();
+  const head = `${mobileBrand()}
+  <div class="head"><div><div class="eyebrow">Repertório</div><h1>Sequências e materiais</h1><p class="sub">As músicas de cada instrumento na ordem em que você ensina, com o arquivo para abrir e imprimir.</p></div></div>`;
+  if (!docs.length) return head + `<div class="panel empty">${ic('repertorio',1.6)}<b>Repertório ainda vazio</b><span>No computador, abra Ajustes e envie a pasta HR-LUCAS. O app monta as sequências pelos números no começo do nome dos arquivos.</span><button class="btn" data-go="ajustes">${ic('gear',1.8)}Abrir Ajustes</button></div>`;
+  const sel = S.rep[S.repSel] ? S.repSel : docs[0][0];
+  const chips = `<div class="chips" role="group" aria-label="Instrumento">${docs.map(([id,d]) => `<button class="chip" data-repi="${id}" aria-pressed="${id===sel}">${esc(d.nome)}</button>`).join('')}</div>`;
+  const search = `<label class="search">${ic('search')}<input class="input" id="repq" type="search" placeholder="Buscar música em todo o repertório…" value="${esc(S.repQ)}" autocomplete="off"></label>`;
+  const q = na(S.repQ);
+  if (q) {
+    const hits = [];
+    for (const [id,d] of docs) for (const s of d.secoes || []) for (const it of s.itens || []) if (na(it.t).includes(q)) hits.push([d, s, it]);
+    return head + `<div class="toolbar">${search}</div>
+    <div class="panel">${hits.length ? hits.slice(0, 120).map(([d,s,it]) => repRow(it, it.n == null, `${d.nome} · ${s.nome}`)).join('') : `<div class="empty"><b>Nada encontrado</b><span>Tente outra parte do nome da música.</span></div>`}</div>
+    ${hits.length > 120 ? `<p class="sub">Mostrando 120 de ${hits.length}. Digite mais do nome para achar.</p>` : ''}`;
+  }
+  const d = S.rep[sel];
+  const secs = (d.secoes || []).map((s, i) => {
+    const key = sel + '|' + s.id;
+    const open = S.repOpen[key] ?? (s.sequencia || (d.secoes.length === 1));
+    const seq = (s.itens || []).filter(it => it.n != null), rest = (s.itens || []).filter(it => it.n == null);
+    const body = !open ? '' : seq.map(it => repRow(it, false)).join('')
+      + (rest.length ? (seq.length ? `<div class="rep-sep">Fora da sequência</div>` : '') + rest.map(it => repRow(it, true)).join('') : '');
+    return `<details class="panel rep-sec" ${open ? 'open' : ''}><summary data-repsec="${esc(key)}"><span>${esc(s.nome)}</span>${s.sequencia ? `<span class="pill" style="--c:var(--cor)">Sequência</span>` : ''}<span class="badge num">${(s.itens||[]).length}</span><svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">${I.down}</svg></summary>${body}</details>`;
+  }).join('');
+  return head + `<div class="toolbar">${search}</div>${chips}${secs}`;
+}
+async function openFile(path) {
+  if (!S.storage) return toast(FB_CONFIG ? 'Os arquivos ainda não estão ligados. Ative o Storage no Firebase.' : 'Os arquivos abrem no app do site ou do celular, com login.');
+  const w = IN_APK ? null : window.open('', '_blank');
+  if (w) w.document.write('<p style="font:16px system-ui;padding:24px">Abrindo o arquivo…</p>');
+  try {
+    const url = await S.storage.ref(path).getDownloadURL();
+    if (w) w.location.replace(url); else window.open(url, '_blank');
+  } catch (e) {
+    w?.close();
+    toast(e?.code === 'storage/object-not-found' ? 'Esse arquivo ainda não foi enviado. Em Ajustes, envie a pasta HR-LUCAS.' : 'Não consegui abrir o arquivo. Confira a internet.');
+  }
+}
+// Reads the folder chosen in Ajustes (HR-LUCAS), sends the files that are not in Storage yet and saves the catalog.
+async function importRepertorio(fileList) {
+  const prog = t => { S.repProg = t; const el = $('#repProg'); if (el) el.textContent = t; };
+  const byRel = new Map();
+  for (const f of fileList) byRel.set(f.webkitRelativePath.split('/').slice(1).join('/').normalize('NFC'), f);
+  const mf = byRel.get('APP HORARIOS AULAS/Repertório/repertorio.json'.normalize('NFC'));
+  if (!mf) { prog(''); return toast('Não achei a lista do repertório. Escolha a pasta HR-LUCAS inteira.'); }
+  let cat;
+  try { cat = JSON.parse(await mf.text()).catalogo; } catch {}
+  if (!Array.isArray(cat)) return toast('A lista do repertório está com problema. Peça para o Claude gerar de novo.');
+  let sent = 0, failed = 0;
+  if (S.storage) {
+    prog('Conferindo o que já foi enviado…');
+    let have = new Set();
+    try { have = new Set((await S.storage.ref('rep').listAll()).items.map(r => r.fullPath)); }
+    catch (e) { if (e?.code === 'storage/unauthorized') { prog(''); return toast('Sem permissão no Storage. Confira as regras do Storage.'); } }
+    const todo = [];
+    for (const c of cat) for (const s of c.secoes) for (const it of s.itens) if (!have.has(it.f) && byRel.has(it.src.normalize('NFC'))) todo.push(it);
+    const uniq = [...new Map(todo.map(it => [it.f, it])).values()];
+    const types = { '.pdf':'application/pdf', '.png':'image/png', '.jpg':'image/jpeg', '.jpeg':'image/jpeg', '.gif':'image/gif' };
+    let i = 0;
+    const worker = async () => {
+      while (i < uniq.length) {
+        const it = uniq[i++];
+        try {
+          await S.storage.ref(it.f).put(byRel.get(it.src.normalize('NFC')), { contentType: types[it.f.slice(it.f.lastIndexOf('.'))] || 'application/octet-stream' });
+          have.add(it.f); sent++;
+        } catch { failed++; }
+        prog(`Enviando arquivos: ${sent + failed} de ${uniq.length}…`);
+      }
+    };
+    await Promise.all([worker(), worker(), worker(), worker()]);
+    for (const c of cat) for (const s of c.secoes) for (const it of s.itens) if (!have.has(it.f)) it.f = '';
+  }
+  prog('Salvando as sequências…');
+  const jobs = cat.map((c, ordem) => {
+    const doc = { nome: c.nome, instrumentos: c.instrumentos || [], ordem, atualizado: new Date().toISOString(),
+      secoes: c.secoes.map(s => ({ id: s.id, nome: s.nome, sequencia: !!s.sequencia, itens: s.itens.map(({ id, n, t, tom, tipo, f }) => ({ id, n: n ?? null, t, tom: tom || '', tipo, f })) })) };
+    S.rep[c.id] = doc;
+    return write('repertorio', c.id, doc);
+  });
+  await Promise.all(jobs);
+  const total = cat.reduce((n, c) => n + c.secoes.reduce((m, s) => m + s.itens.length, 0), 0);
+  prog(`Pronto: ${total} músicas e materiais.${S.storage ? ` ${sent} arquivos enviados agora${failed ? `, ${failed} falharam (envie de novo para tentar só esses)` : ''}.` : ''}`);
+  render();
+}
+document.addEventListener('change', e => { if (e.target.id === 'repDir' && e.target.files?.length) { importRepertorio(e.target.files); e.target.value = ''; } });
+// Student's place in a sequence: a.rep = { i: catalog id, s: section id, item: current item id, feitas: [item ids] }.
+function repBox(a) {
+  if (!Object.keys(S.rep).length) return '';
+  const r = a.rep || {};
+  const docs = repDocsFor(a.instrumento);
+  if (r.i && S.rep[r.i] && !docs.some(([id]) => id === r.i)) docs.unshift([r.i, S.rep[r.i]]);
+  const secOpts = docs.map(([id,d]) => `<optgroup label="${esc(d.nome)}">${(d.secoes||[]).slice().sort((x,y) => y.sequencia - x.sequencia).map(s => `<option value="${id}|${s.id}" ${r.i===id && r.s===s.id ? 'selected' : ''}>${esc(s.nome)} (${(s.itens||[]).length})</option>`).join('')}</optgroup>`).join('');
+  const sec = r.s ? repSec(r.i, r.s) : null;
+  const items = sec?.itens || [];
+  const idx = items.findIndex(it => it.id === r.item);
+  const cur = items[idx];
+  const feitas = new Set(r.feitas || []);
+  return `<div class="rep-box">
+    <div class="field"><label for="f-repsec">Sequência do repertório</label><select class="input" id="f-repsec"><option value="">Nenhuma</option>${secOpts}</select></div>
+    ${sec ? `
+      <div class="rep-now"><div style="min-width:0"><div class="k num">${cur ? `Música ${idx + 1} de ${items.length}` : 'Escolha a música'}${feitas.size ? ` · ${[...feitas].filter(id => items.some(it => it.id === id)).length} já feitas` : ''}</div>${cur ? `<div class="t">${esc(cur.t)}${cur.tom ? ` <span class="pill">Tom ${esc(cur.tom)}</span>` : ''}</div>` : ''}</div></div>
+      <select class="input" id="f-repitem" aria-label="Música da sequência"><option value="">—</option>${items.map((it, i) => `<option value="${it.id}" ${it.id===r.item?'selected':''}>${feitas.has(it.id) ? '✓ ' : ''}${esc(fmtN(it.n) || '·')} · ${esc(it.t)}</option>`).join('')}</select>
+      <div class="rep-act">
+        <button class="btn sm" data-repstep="-1" ${idx <= 0 ? 'disabled' : ''}>${ic('left')}Anterior</button>
+        ${cur?.f ? `<button class="btn sm" data-file="${esc(cur.f)}">${ic('open',1.9)}Abrir</button>` : ''}
+        <button class="btn sm primary" data-repstep="1" ${!cur ? 'disabled' : ''}>${ic('check')}Terminou, próxima</button>
+      </div>` : ''}
+  </div>`;
+}
+function repSet(a, item) {
+  a.rep.item = item?.id || '';
+  if (item) a.musicaAtual = item.t;
+}
+function repStep(id, dir) {
+  const a = S.alunos[id]; const r = a.rep; const sec = r && repSec(r.i, r.s); if (!sec) return;
+  const items = sec.itens; const i = items.findIndex(it => it.id === r.item);
+  if (dir > 0) {
+    const cur = items[i]; if (!cur) return;
+    r.feitas = [...new Set([...(r.feitas || []), cur.id])];
+    const next = items.slice(i + 1).find(it => !r.feitas.includes(it.id));
+    a.diario = a.diario || [];
+    a.diario.push({ d: todayISO(), t: next ? `Terminou "${cur.t}". Próxima: "${next.t}".` : `Terminou "${cur.t}", a última de ${sec.nome}.` });
+    if (next) repSet(a, next); else toast(`Fim de ${sec.nome}! Escolha a próxima sequência.`);
+  } else if (i > 0) repSet(a, items[i - 1]);
+  touched(id); drawRender();
+}
+
 /* ----- Recital ----- */
 function viewRecital() {
   const k = S.recTab || currentRecital();
@@ -1084,6 +1274,7 @@ function drawRender() {
     <div class="grp">
       <h3>Como está indo</h3>
       <div class="field"><span class="lbl">Nível</span><div class="lvlpick" role="group" aria-label="Nível">${[1,2,3,4].map(n => `<button data-lvl="${n}" aria-pressed="${a.nivel===n}">${lvlBars(n)}${NIVEIS[n]}</button>`).join('')}</div></div>
+      ${repBox(a)}
       <div class="field"><label for="f-musica">Música que está tocando</label><input class="input" id="f-musica" data-f="musicaAtual" value="${esc(a.musicaAtual)}" placeholder="Ex.: Pais e Filhos – Legião Urbana"></div>
       <div class="g2">
         <div class="field"><label for="f-esc">Escalas</label><select class="input" id="f-esc" data-f="escalaStatus"><option value="">Não anotado</option>${Object.entries({nao:'Ainda não vê',estudando:'Está estudando',ok:'Em dia'}).map(([k,l]) => `<option value="${k}" ${a.escalaStatus===k?'selected':''}>${l}</option>`).join('')}</select></div>
@@ -1156,6 +1347,8 @@ document.addEventListener('click', e => {
   if (!t) return;
   const ds = t.dataset;
   if (ds.go) return go(ds.go);
+  if (ds.file) return openFile(ds.file);
+  if (ds.repi) { S.repSel = ds.repi; return render(); }
   if (ds.act === 'xlsx') return exportXlsx();
   if (ds.act === 'backup') return exportBackup();
   if (ds.act === 'logout') { firebase.auth().signOut().then(() => location.reload()); return; }
@@ -1219,6 +1412,7 @@ document.addEventListener('click', e => {
     if (ds.lvl) { a.nivel = a.nivel === +ds.lvl ? 0 : +ds.lvl; document.querySelectorAll('[data-lvl]').forEach(b => b.setAttribute('aria-pressed', +b.dataset.lvl === a.nivel)); touched(id); return render(); }
     if (ds.recsw) { const r = a.recital[ds.recsw]; r.on = !r.on; if (r.on) r.ordem = 999; touched(id); drawRender(); if (r.on) $(`#f-rec-${ds.recsw}`)?.focus(); return render(); }
     if (t.id === 'log-add') return addLog();
+    if (ds.repstep) return repStep(id, +ds.repstep);
     if (ds.logdel != null) { a.diario.splice(+ds.logdel, 1); $('#log').innerHTML = logHTML(a); return touched(id); }
     if (t.id === 'toggleAtivo') { a.ativo = a.ativo === false; saveAluno(id, true); toast(a.ativo ? `${a.nome} voltou para a turma.` : `${a.nome} saiu da grade. A ficha fica em Ex-alunos.`); return closeAluno(); }
     if (t.id === 'delAluno') {
@@ -1235,6 +1429,11 @@ function addLog() {
   a.diario = a.diario || []; a.diario.push({ d: $('#log-d').value || todayISO(), t });
   $('#log-t').value = ''; $('#log').innerHTML = logHTML(a); touched(S.openId);
 }
+document.addEventListener('click', e => {
+  const sm = e.target.closest('summary[data-repsec]'); if (!sm) return;
+  e.preventDefault();
+  const k = sm.dataset.repsec; S.repOpen[k] = !sm.parentElement.open; render();
+});
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && S.openId) closeAluno();
   if (e.key === 'Enter' && e.target.id === 'log-t') addLog();
@@ -1243,6 +1442,7 @@ $('#scrim').addEventListener('click', closeAluno);
 
 document.addEventListener('input', e => {
   const t = e.target;
+  if (t.id === 'repq') { S.repQ = t.value; const pos = t.selectionStart; render(); const q = $('#repq'); q.focus(); q.setSelectionRange(pos,pos); return; }
   if (t.id === 'q') { S.q = t.value; const pos = t.selectionStart; render(); const q = $('#q'); q.focus(); q.setSelectionRange(pos,pos); return; }
   if (t.dataset.recsong) { const k = S.recTab || currentRecital(); S.alunos[t.dataset.recsong].recital[k].musica = t.value; saveAluno(t.dataset.recsong); return; }
   if (t.dataset.f && S.openId) {
@@ -1259,6 +1459,18 @@ document.addEventListener('change', e => {
   const t = e.target;
   if (t.id === 'recdate') { const k = S.recTab || currentRecital(); S.config.recitais = S.config.recitais || {}; S.config.recitais[k] = { data: t.value }; saveConfig(); return render(); }
   if (t.id === 'sortsel') { const [k, d] = t.value.split('|'); return setSort(k, +d); }
+  if ((t.id === 'f-repsec' || t.id === 'f-repitem') && S.openId) {
+    const a = S.alunos[S.openId];
+    if (t.id === 'f-repsec') {
+      if (!t.value) a.rep = null;
+      else {
+        const [i, sid] = t.value.split('|'); const sec = repSec(i, sid);
+        a.rep = { i, s: sid, item: '', feitas: a.rep?.feitas || [] };
+        repSet(a, sec?.itens.find(it => !a.rep.feitas.includes(it.id)) || sec?.itens[0]);
+      }
+    } else repSet(a, repSec(a.rep.i, a.rep.s)?.itens.find(it => it.id === t.value));
+    touched(S.openId); drawRender(); return render();
+  }
   if (t.dataset.rdate) { S.repos[t.dataset.rdate].novaData = t.value; saveRepo(t.dataset.rdate); return; }
   if (t.dataset.rtime) { S.repos[t.dataset.rtime].novaHora = t.value; saveRepo(t.dataset.rtime); return; }
 });
