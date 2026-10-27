@@ -14,8 +14,7 @@ App das aulas de música do Lucas: grade da semana, fichas dos alunos (música a
 | `web/` | Manifest do app instalável, service worker e ícones. |
 | `assets/` | Ícone e tela de abertura usados no APK. |
 | `firebase/firestore.rules` | Regras do banco: só a conta do Lucas lê e grava. |
-| `firebase/storage.rules` | Regras dos arquivos do repertório (Firebase Storage): só a conta do Lucas. |
-| `scripts/repertorio.py` | Lê a pasta HR-LUCAS do computador, converte Word para PDF e gera a lista do repertório. |
+| `google.config.json` | ID do cliente OAuth do Google (público) que deixa o app ler os nomes dos arquivos no Google Drive. |
 | `.github/workflows/` | `site.yml` monta o site e publica na branch `gh-pages` (GitHub Pages); `apk.yml` gera o APK e atualiza a versão "apk". |
 
 A cada `push` na `main`, o GitHub publica o site e gera um APK novo.
@@ -29,12 +28,13 @@ A cada `push` na `main`, o GitHub publica o site e gera um APK novo.
 
 ## Repertório
 
-As sequências saem das pastas do computador (HR-LUCAS). O número no começo do nome do arquivo é a ordem em que a música é ensinada (`3-O Mar Serenou.docx`, `(MUSICA 1) Marcha.pdf`); arquivos sem número entram como "fora da sequência". A pasta CIFRAS vira uma biblioteca de busca, sem ordem.
+As sequências saem da pasta HR-LUCAS do computador, que o Google Drive para computador sincroniza. Em **Repertório > Atualizar do Drive** (no site), o app entra no Google com permissão só de ver os nomes dos arquivos (`drive.metadata.readonly`), percorre a pasta e grava o catálogo no Firestore. O celular e o APK leem esse catálogo, e **Abrir** mostra o arquivo no visualizador do Drive (Word e PDF).
 
-1. `python3 scripts/repertorio.py "<caminho da pasta HR-LUCAS>"` converte os Word para PDF em `APP HORARIOS AULAS/Repertório/PDFs` (os originais não mudam) e grava `APP HORARIOS AULAS/Repertório/repertorio.json`. Precisa do LibreOffice.
-2. No app, no computador: **Ajustes > Repertório > Enviar pasta HR-LUCAS**. O app manda para o Firebase Storage só os arquivos que ainda não estão lá e salva as sequências no Firestore.
+- O número no começo do nome é a ordem de ensino (`3-O Mar Serenou.docx`, `(MUSICA 1) Marcha.pdf`, `13.1 Monte Castelo.pdf`); arquivos sem número entram como "fora da sequência".
+- Cada pasta de instrumento vira um item, e cada subpasta uma seção. A pasta CIFRAS é uma biblioteca de busca, sem ordem.
+- O conteúdo das cifras nunca passa pelo app nem por este repositório.
 
-Os arquivos nunca vão para este repositório (ele é público).
+Configuração única no [Google Cloud](https://console.cloud.google.com/) (projeto `horarios-hr`): ativar a **Google Drive API**; criar a tela de consentimento OAuth (Externo, em teste, com a conta do Lucas como usuário de teste); criar um cliente OAuth **Aplicativo da Web** com a origem `https://lucaspagnota.github.io`; colocar o ID em `google.config.json` (`{"clientId": "..."}`).
 
 ## Rodar no computador
 

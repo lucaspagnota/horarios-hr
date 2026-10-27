@@ -495,7 +495,7 @@ const IN_APK = !!window.Capacitor?.isNativePlatform?.();
 const S = {
   alunos: {}, repos: {}, config: {}, rep: {},
   loaded: { alunos:false, repos:false },
-  repSel: null, repQ: '', repOpen: {}, storage: null,
+  repSel: null, repQ: '', repOpen: {},
   db: null, offline: false,
   view: 'grade', loc: 'todos', q: '', weekOff: 0, mDay: null,
   recTab: null, openId: null, newDraft: null, alView: 'cards',
@@ -631,7 +631,6 @@ async function firebaseBoot() {
     const user = await new Promise(res => { const off = firebase.auth().onAuthStateChanged(u => { off(); res(u); }); });
     if (!user) { S.needLogin = true; render(); return null; }
     S.needLogin = false; S.user = { email: user.email };
-    if (firebase.storage) S.storage = firebase.storage();
     return firebase.firestore();
   } catch (e) {
     S.fbError = true; S.loaded.alunos = true; render(); return null;
@@ -682,6 +681,7 @@ function navHTML(mobile) {
 }
 function go(v) {
   S.view = v;
+  if (v === 'repertorio' && Date.now() - (S.repSync || 0) > 10 * 60000) syncDrive(false);
   try { history.replaceState(null, '', '#' + v); } catch {}
   render(); window.scrollTo({top:0});
 }
@@ -762,10 +762,10 @@ function viewAjustes() {
     </div>
     <div class="panel side-card">
       <h2>Repertório</h2>
-      <p class="sub" style="margin:0">${Object.keys(S.rep).length ? `${repDocs().reduce((n,[,d]) => n + nItens(d), 0)} músicas e materiais em ${Object.keys(S.rep).length} pastas.` : 'Ainda vazio.'} Para atualizar, escolha a pasta HR-LUCAS: o app lê a lista que o Claude preparou e envia só os arquivos novos.</p>
-      ${IN_APK ? `<p class="sub" style="margin:0">Envie pelo computador. No celular os arquivos já abrem.</p>` : `<label class="btn" for="repDir" style="cursor:pointer">${ic('up2')}Enviar pasta HR-LUCAS</label>
-      <input type="file" id="repDir" webkitdirectory multiple hidden>`}
-      <p class="rep-prog" id="repProg" role="status">${esc(S.repProg || '')}</p>
+      <p class="sub" style="margin:0">${Object.keys(S.rep).length ? `${repDocs().reduce((n,[,d]) => n + nItens(d), 0)} músicas e materiais da pasta HR-LUCAS do Google Drive.` : 'Ainda vazio.'} Cifra nova salva no computador aparece aqui depois que o Drive sincroniza e você toca em Atualizar.</p>
+      ${DRIVE_OK ? `<button class="btn" data-act="drivesync" ${S.repSyncing ? 'disabled' : ''}>${ic('reposicoes',1.8)}Atualizar do Drive</button>`
+        : `<p class="sub" style="margin:0;font-size:12.5px">${GOOGLE_CLIENT ? 'Para atualizar, abra pelo site (no APK o Google não deixa entrar).' : 'O acesso ao Google Drive ainda não foi configurado.'}</p>`}
+      <p class="rep-prog" role="status">${esc(S.repProg || '')}</p>
     </div>
     <div class="panel side-card">
       <h2>Onde ficam os dados</h2>
@@ -965,7 +965,7 @@ function viewAlunos() {
 
 /* ----- Repertório ----- */
 const na = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
-const repDocs = () => Object.entries(S.rep).sort((x,y) => (x[1].ordem ?? 99) - (y[1].ordem ?? 99));
+const repDocs = () => Object.entries(S.rep).filter(([, d]) => d.secoes?.length).sort((x,y) => (x[1].ordem ?? 99) - (y[1].ordem ?? 99));
 const repSec = (iid, sid) => (S.rep[iid]?.secoes || []).find(s => s.id === sid) || null;
 const nItens = d => (d.secoes || []).reduce((n, s) => n + (s.itens?.length || 0), 0);
 // Catalog entries that fit the student's instrument ("Violão" -> "Violão e guitarra"). Infantil fits everyone.
@@ -986,14 +986,15 @@ function repRow(it, extra, ctx = '') {
     <div style="min-width:0"><div class="t">${esc(it.t)}</div>${ctx ? `<div class="sub" style="font-size:12.5px;margin:2px 0 0">${esc(ctx)}</div>` : ''}
       ${it.tom || who.length ? `<div class="sub2">${it.tom ? `<span class="pill">Tom ${esc(it.tom)}</span>` : ''}${who.map(([id,a]) => `<button class="pill who" style="--c:var(--bat)" data-open="${id}">${esc(a.nome)}</button>`).join('')}</div>` : ''}
     </div>
-    ${it.f ? `<button class="btn sm" data-file="${esc(it.f)}">${ic('open',1.9)}<span>Abrir</span></button>` : '<span></span>'}
+    <button class="btn sm" data-file="${esc(it.f || it.id)}">${ic('open',1.9)}<span>Abrir</span></button>
   </div>`;
 }
 function viewRepertorio() {
   const docs = repDocs();
   const head = `${mobileBrand()}
-  <div class="head"><div><div class="eyebrow">Repertório</div><h1>Sequências e materiais</h1><p class="sub">As músicas de cada instrumento na ordem em que você ensina, com o arquivo para abrir e imprimir.</p></div></div>`;
-  if (!docs.length) return head + `<div class="panel empty">${ic('repertorio',1.6)}<b>Repertório ainda vazio</b><span>No computador, abra Ajustes e envie a pasta HR-LUCAS. O app monta as sequências pelos números no começo do nome dos arquivos.</span><button class="btn" data-go="ajustes">${ic('gear',1.8)}Abrir Ajustes</button></div>`;
+  <div class="head"><div><div class="eyebrow">Repertório</div><h1>Sequências e materiais</h1><p class="sub">As músicas de cada instrumento na ordem em que você ensina, direto da pasta HR-LUCAS do seu Google Drive.</p><p class="rep-prog" role="status">${esc(S.repProg || '')}</p></div>
+    ${DRIVE_OK ? `<div class="actions"><button class="btn" data-act="drivesync" ${S.repSyncing ? 'disabled' : ''}>${ic('reposicoes',1.8)}<span>Atualizar do Drive</span></button></div>` : ''}</div>`;
+  if (!docs.length) return head + `<div class="panel empty">${ic('repertorio',1.6)}<b>Repertório ainda vazio</b><span>${DRIVE_OK ? 'Toque em "Atualizar do Drive". O app lê a pasta HR-LUCAS e monta as sequências pelos números no começo do nome dos arquivos.' : 'Abra o app pelo site (no computador ou no Chrome do celular) e toque em "Atualizar do Drive".'}</span></div>`;
   const sel = S.rep[S.repSel] ? S.repSel : docs[0][0];
   const chips = `<div class="chips" role="group" aria-label="Instrumento">${docs.map(([id,d]) => `<button class="chip" data-repi="${id}" aria-pressed="${id===sel}">${esc(d.nome)}</button>`).join('')}</div>`;
   const search = `<label class="search">${ic('search')}<input class="input" id="repq" type="search" placeholder="Buscar música em todo o repertório…" value="${esc(S.repQ)}" autocomplete="off"></label>`;
@@ -1016,65 +1017,173 @@ function viewRepertorio() {
   }).join('');
   return head + `<div class="toolbar">${search}</div>${chips}${secs}`;
 }
-async function openFile(path) {
-  if (!S.storage) return toast(FB_CONFIG ? 'Os arquivos ainda não estão ligados. Ative o Storage no Firebase.' : 'Os arquivos abrem no app do site ou do celular, com login.');
-  const w = IN_APK ? null : window.open('', '_blank');
-  if (w) w.document.write('<p style="font:16px system-ui;padding:24px">Abrindo o arquivo…</p>');
-  try {
-    const url = await S.storage.ref(path).getDownloadURL();
-    if (w) w.location.replace(url); else window.open(url, '_blank');
-  } catch (e) {
-    w?.close();
-    toast(e?.code === 'storage/object-not-found' ? 'Esse arquivo ainda não foi enviado. Em Ajustes, envie a pasta HR-LUCAS.' : 'Não consegui abrir o arquivo. Confira a internet.');
-  }
+// Files open in Google Drive's viewer (Word too), in the browser or the Drive app on the phone.
+function openFile(id) {
+  window.open(`https://drive.google.com/file/d/${encodeURIComponent(id)}/view`, '_blank', 'noopener');
 }
-// Reads the folder chosen in Ajustes (HR-LUCAS), sends the files that are not in Storage yet and saves the catalog.
-async function importRepertorio(fileList) {
-  const prog = t => { S.repProg = t; const el = $('#repProg'); if (el) el.textContent = t; };
-  const byRel = new Map();
-  for (const f of fileList) byRel.set(f.webkitRelativePath.split('/').slice(1).join('/').normalize('NFC'), f);
-  const mf = byRel.get('APP HORARIOS AULAS/Repertório/repertorio.json'.normalize('NFC'));
-  if (!mf) { prog(''); return toast('Não achei a lista do repertório. Escolha a pasta HR-LUCAS inteira.'); }
-  let cat;
-  try { cat = JSON.parse(await mf.text()).catalogo; } catch {}
-  if (!Array.isArray(cat)) return toast('A lista do repertório está com problema. Peça para o Claude gerar de novo.');
-  let sent = 0, failed = 0;
-  if (S.storage) {
-    prog('Conferindo o que já foi enviado…');
-    let have = new Set();
-    try { have = new Set((await S.storage.ref('rep').listAll()).items.map(r => r.fullPath)); }
-    catch (e) { if (e?.code === 'storage/unauthorized') { prog(''); return toast('Sem permissão no Storage. Confira as regras do Storage.'); } }
-    const todo = [];
-    for (const c of cat) for (const s of c.secoes) for (const it of s.itens) if (!have.has(it.f) && byRel.has(it.src.normalize('NFC'))) todo.push(it);
-    const uniq = [...new Map(todo.map(it => [it.f, it])).values()];
-    const types = { '.pdf':'application/pdf', '.png':'image/png', '.jpg':'image/jpeg', '.jpeg':'image/jpeg', '.gif':'image/gif' };
-    let i = 0;
-    const worker = async () => {
-      while (i < uniq.length) {
-        const it = uniq[i++];
-        try {
-          await S.storage.ref(it.f).put(byRel.get(it.src.normalize('NFC')), { contentType: types[it.f.slice(it.f.lastIndexOf('.'))] || 'application/octet-stream' });
-          have.add(it.f); sent++;
-        } catch { failed++; }
-        prog(`Enviando arquivos: ${sent + failed} de ${uniq.length}…`);
-      }
-    };
-    await Promise.all([worker(), worker(), worker(), worker()]);
-    for (const c of cat) for (const s of c.secoes) for (const it of s.itens) if (!have.has(it.f)) it.f = '';
+
+/* ----- Repertório from Google Drive ----- */
+// The HR-LUCAS folder on the PC syncs to Drive. "Atualizar do Drive" reads its file names (never the
+// contents) and rebuilds the catalog in Firestore, so the phone and the APK see it without logging in to Google.
+const GOOGLE_CLIENT = window.HR_GOOGLE?.clientId || '';
+const DRIVE_OK = !!(GOOGLE_CLIENT && STANDALONE && !IN_APK);
+const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.metadata.readonly';
+const DRIVE_TOKEN_KEY = 'horarios-hr-drive';
+const PASTA_RAIZ = 'HR-LUCAS';
+// Top-level folder -> catalog entry; "instrumentos" matches the instrument written on each student.
+const REP_PASTAS = {
+  'VIOLÃO E GUITAR': ['violao', 'Violão e guitarra', ['Violão', 'Guitarra']],
+  'VIOLINO': ['violino', 'Violino', ['Violino']],
+  'BAIXO': ['baixo', 'Contrabaixo', ['Baixo', 'Contrabaixo']],
+  'CAVACO': ['cavaquinho', 'Cavaquinho', ['Cavaquinho', 'Cavaco']],
+  'VIOLA': ['viola', 'Viola caipira', ['Viola caipira', 'Viola']],
+  'UKULELE': ['ukulele', 'Ukulele', ['Ukulele']],
+  'INFANTIL': ['infantil', 'Infantil', []],
+  'TEORIA MUSICAL': ['teoria', 'Teoria musical', []],
+  'CIFRAS': ['cifras', 'Cifras (biblioteca)', []],
+};
+const REP_ORDEM = ['violao', 'violino', 'baixo', 'cavaquinho', 'viola', 'ukulele', 'infantil', 'teoria', 'cifras'];
+const REP_SEM_ORDEM = new Set(['cifras']); // hymn numbers like "107 Creio..." are part of the title
+const APOSTILA_TAG = { 'CAVACO':'cavaquinho', 'VIOLA':'viola', 'VIOLINO':'violino', 'VIOLÃO':'violao', 'GUITARRA':'violao' };
+const REP_AVULSOS = { 'Ebook-190-exercicios-guitarra.pdf': ['violao', 'Apostilas'] };
+const REP_SKIP = new Set(['AUDIOS', 'MuseScore', '.mscbackup', 'APP HORARIOS AULAS']);
+const REP_EXT = /\.(pdf|docx?|odt|rtf|txt|png|jpe?g|gif)$/i;
+// "3-Título", "(MUSICA 1) Título", "1. Título", "13.1 Título". A bare "11 Vidas" is a title, not an order.
+const NUM_RE = /^\s*(?:\(\s*(?:m[uú]sica\s*)?(\d{1,3})\s*\)|(\d{1,3})\s*[-–.](?!\d)|(\d{1,3}\.\d{1,2})\s)\s*/i;
+const TOM_RE = /(?:\s+-\s*|\s*\(\s*|\s+)([A-G](?:#|b)?m?)\s*\)?$/;
+
+function prettyName(s) {
+  s = s.replace(/_/g, ' ').replace(/\s+/g, ' ').replace(/^[\s-]+|[\s-]+$/g, '');
+  if (s.length > 3 && s === s.toUpperCase() && s !== s.toLowerCase()) {
+    const small = new Set(['de','da','do','das','dos','e','o','a','os','as','em','no','na','of','the']);
+    s = s.toLowerCase().split(' ').map((w, i) => i && small.has(w) ? w : w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   }
-  prog('Salvando as sequências…');
-  const jobs = cat.map((c, ordem) => {
-    const doc = { nome: c.nome, instrumentos: c.instrumentos || [], ordem, atualizado: new Date().toISOString(),
-      secoes: c.secoes.map(s => ({ id: s.id, nome: s.nome, sequencia: !!s.sequencia, itens: s.itens.map(({ id, n, t, tom, tipo, f }) => ({ id, n: n ?? null, t, tom: tom || '', tipo, f })) })) };
-    S.rep[c.id] = doc;
-    return write('repertorio', c.id, doc);
+  return s === 'Musicas' ? 'Músicas' : s;
+}
+function parseSong(stem, ordem) {
+  let n = null, tom = '';
+  const m = ordem ? stem.match(NUM_RE) : null;
+  if (m) { n = parseFloat(m[1] || m[2] || m[3]); stem = stem.slice(m[0].length); }
+  const t = stem.match(TOM_RE);
+  if (t && stem.length > t[0].length + 2) { tom = t[1]; stem = stem.slice(0, t.index); }
+  return { n, t: prettyName(stem), tom };
+}
+const stemOf = name => name.replace(/\.[^.]+$/, '').replace(/\.docx$/i, '');
+
+function loadGIS() {
+  if (window.google?.accounts?.oauth2) return Promise.resolve();
+  return loadGIS.p ||= new Promise((res, rej) => { const s = document.createElement('script'); s.src = 'https://accounts.google.com/gsi/client'; s.onload = res; s.onerror = rej; document.head.appendChild(s); });
+}
+function savedDriveToken() {
+  try { const t = JSON.parse(sessionStorage.getItem(DRIVE_TOKEN_KEY) || 'null'); if (t && t.exp > Date.now() + 60000) return t.v; } catch {}
+  return null;
+}
+// Must run inside the click: the Google window is a popup.
+function askDriveToken() {
+  return new Promise((res, rej) => {
+    if (!window.google?.accounts?.oauth2) return rej(new Error('gis'));
+    google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT, scope: DRIVE_SCOPE, login_hint: S.user?.email || '',
+      callback: r => {
+        if (r.error || !r.access_token) return rej(r);
+        try { sessionStorage.setItem(DRIVE_TOKEN_KEY, JSON.stringify({ v: r.access_token, exp: Date.now() + (r.expires_in || 3600) * 1000 })); } catch {}
+        res(r.access_token);
+      },
+      error_callback: rej,
+    }).requestAccessToken();
   });
-  await Promise.all(jobs);
-  const total = cat.reduce((n, c) => n + c.secoes.reduce((m, s) => m + s.itens.length, 0), 0);
-  prog(`Pronto: ${total} músicas e materiais.${S.storage ? ` ${sent} arquivos enviados agora${failed ? `, ${failed} falharam (envie de novo para tentar só esses)` : ''}.` : ''}`);
-  render();
 }
-document.addEventListener('change', e => { if (e.target.id === 'repDir' && e.target.files?.length) { importRepertorio(e.target.files); e.target.value = ''; } });
+async function driveList(token, q) {
+  const out = []; let page = '';
+  do {
+    const u = 'https://www.googleapis.com/drive/v3/files?pageSize=1000&fields=nextPageToken,files(id,name,mimeType)&q=' + encodeURIComponent(q) + (page ? '&pageToken=' + page : '');
+    const r = await fetch(u, { headers: { Authorization: 'Bearer ' + token } });
+    if (r.status === 401) { try { sessionStorage.removeItem(DRIVE_TOKEN_KEY); } catch {} throw new Error('401'); }
+    if (!r.ok) throw new Error(String(r.status));
+    const j = await r.json(); out.push(...(j.files || [])); page = j.nextPageToken || '';
+  } while (page);
+  return out;
+}
+// Walks HR-LUCAS and returns every lesson file with its folder path.
+async function driveScan(token, prog) {
+  const FOLDER = 'application/vnd.google-apps.folder';
+  const roots = await driveList(token, `name = '${PASTA_RAIZ}' and mimeType = '${FOLDER}' and trashed = false`);
+  if (!roots.length) throw new Error('raiz');
+  const files = [], queue = [{ id: roots[0].id, path: [] }];
+  let pastas = 0;
+  while (queue.length) {
+    const batch = queue.splice(0, 6);
+    await Promise.all(batch.map(async f => {
+      for (const c of await driveList(token, `'${f.id}' in parents and trashed = false`)) {
+        if (c.mimeType === FOLDER) { if (!REP_SKIP.has(c.name)) queue.push({ id: c.id, path: [...f.path, c.name] }); }
+        else if (REP_EXT.test(c.name) && !/^(~\$|\.)/.test(c.name)) files.push({ id: c.id, name: c.name, path: f.path });
+      }
+    }));
+    pastas += batch.length; prog(`Lendo o Drive: ${pastas} pastas, ${files.length} arquivos…`);
+  }
+  return files;
+}
+// Same name in the same folder: PDF beats Word, .docx beats .doc.
+function dedupeFiles(files) {
+  const rank = f => ({ pdf: 0, docx: 1, doc: 2 }[f.name.split('.').pop().toLowerCase()] ?? 3) + (/\.docx\.pdf$/i.test(f.name) ? 5 : 0);
+  const best = new Map();
+  for (const f of files) {
+    const k = f.path.join('/') + '|' + na(stemOf(f.name));
+    if (!best.has(k) || rank(f) < rank(best.get(k))) best.set(k, f);
+  }
+  return [...best.values()];
+}
+function buildCatalog(files) {
+  const cat = {};
+  for (const [, [id, nome, instrumentos]] of Object.entries(REP_PASTAS)) cat[id] = { nome, instrumentos, secoes: {} };
+  for (const f of dedupeFiles(files)) {
+    const top = f.path[0];
+    let iid, sec, ordem = !!top && !REP_SEM_ORDEM.has(REP_PASTAS[top]?.[0]);
+    let { n, t, tom } = parseSong(stemOf(f.name), ordem);
+    if (!top) { [iid, sec] = REP_AVULSOS[f.name] || ['cifras', 'Avulsas']; }
+    else if (top === 'APOSTILAS') {
+      const m = stemOf(f.name).match(/^\((.+?)\)\s*(.*)$/);
+      iid = (m && APOSTILA_TAG[m[1].toUpperCase()]) || 'teoria'; if (m) t = prettyName(m[2]); sec = 'Apostilas';
+    } else if (REP_PASTAS[top]) { iid = REP_PASTAS[top][0]; sec = f.path.slice(1).map(prettyName).join(' / ') || 'Principal'; }
+    else continue;
+    (cat[iid].secoes[sec] ||= []).push({ id: f.id, n, t, tom });
+  }
+  return REP_ORDEM.map((id, ordem) => {
+    const c = cat[id];
+    const secoes = Object.entries(c.secoes).map(([nome, itens]) => {
+      itens.sort((x, y) => (x.n == null) - (y.n == null) || (x.n ?? 0) - (y.n ?? 0) || na(x.t).localeCompare(na(y.t)));
+      return { id: [...(id + '|' + nome)].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7).toString(36), nome, sequencia: itens.some(i => i.n != null), itens };
+    }).sort((a, b) => (!a.sequencia) - (!b.sequencia) || (a.nome !== 'Principal') - (b.nome !== 'Principal') || na(a.nome).localeCompare(na(b.nome)));
+    return [id, { nome: c.nome, instrumentos: c.instrumentos, ordem, secoes }];
+  }).filter(([, d]) => d.secoes.length);
+}
+async function syncDrive(interactive) {
+  if (!DRIVE_OK || S.repSyncing) return;
+  const prog = t => { S.repProg = t; document.querySelectorAll('.rep-prog').forEach(el => el.textContent = t); };
+  let token = savedDriveToken();
+  try {
+    if (!token) { if (!interactive) return; token = await askDriveToken(); }
+    S.repSyncing = true; prog('Lendo o Drive…');
+    const files = await driveScan(token, prog);
+    let mudou = 0;
+    for (const [id, doc] of buildCatalog(files)) {
+      const old = S.rep[id];
+      if (old && JSON.stringify({ ...old, atualizado: 0 }) === JSON.stringify({ ...doc, atualizado: 0 })) continue;
+      doc.atualizado = new Date().toISOString(); S.rep[id] = doc; mudou++;
+      write('repertorio', id, doc);
+    }
+    S.repSync = Date.now();
+    const total = repDocs().reduce((n, [, d]) => n + nItens(d), 0);
+    prog(`Atualizado agora: ${total} músicas e materiais${mudou ? '' : ', nada mudou'}.`);
+  } catch (e) {
+    prog('');
+    toast(e?.message === 'raiz' ? `Não achei a pasta ${PASTA_RAIZ} no seu Google Drive.`
+      : e?.message === 'gis' ? 'O login do Google ainda está carregando. Toque de novo.'
+      : e?.type === 'popup_closed' || e?.error === 'access_denied' ? 'Sem acesso ao Drive, nada mudou.'
+      : 'Não consegui ler o Drive agora. Confira a internet e tente de novo.');
+  } finally { S.repSyncing = false; render(); }
+}
+if (DRIVE_OK) loadGIS().catch(() => {});
 // Student's place in a sequence: a.rep = { i: catalog id, s: section id, item: current item id, feitas: [item ids] }.
 function repBox(a) {
   if (!Object.keys(S.rep).length) return '';
@@ -1094,7 +1203,7 @@ function repBox(a) {
       <select class="input" id="f-repitem" aria-label="Música da sequência"><option value="">—</option>${items.map((it, i) => `<option value="${it.id}" ${it.id===r.item?'selected':''}>${feitas.has(it.id) ? '✓ ' : ''}${esc(fmtN(it.n) || '·')} · ${esc(it.t)}</option>`).join('')}</select>
       <div class="rep-act">
         <button class="btn sm" data-repstep="-1" ${idx <= 0 ? 'disabled' : ''}>${ic('left')}Anterior</button>
-        ${cur?.f ? `<button class="btn sm" data-file="${esc(cur.f)}">${ic('open',1.9)}Abrir</button>` : ''}
+        ${cur ? `<button class="btn sm" data-file="${esc(cur.f || cur.id)}">${ic('open',1.9)}Abrir</button>` : ''}
         <button class="btn sm primary" data-repstep="1" ${!cur ? 'disabled' : ''}>${ic('check')}Terminou, próxima</button>
       </div>` : ''}
   </div>`;
@@ -1351,6 +1460,7 @@ document.addEventListener('click', e => {
   if (ds.repi) { S.repSel = ds.repi; return render(); }
   if (ds.act === 'xlsx') return exportXlsx();
   if (ds.act === 'backup') return exportBackup();
+  if (ds.act === 'drivesync') return syncDrive(true);
   if (ds.act === 'logout') { firebase.auth().signOut().then(() => location.reload()); return; }
   if (ds.act === 'install') { window.HR_INSTALL?.prompt?.(); window.HR_INSTALL = null; return; }
   if (ds.goto) { closeAluno(); return go(ds.goto); }

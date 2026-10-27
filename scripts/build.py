@@ -10,7 +10,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 WWW = ROOT / "www"
-FIREBASE_FILES = ["firebase-app-compat.js", "firebase-auth-compat.js", "firebase-firestore-compat.js", "firebase-storage-compat.js"]
+FIREBASE_FILES = ["firebase-app-compat.js", "firebase-auth-compat.js", "firebase-firestore-compat.js"]
 
 
 def main():
@@ -37,6 +37,10 @@ def main():
     flags = "window.HR_STANDALONE = true;"
     if firebase:
         flags += f"\nwindow.HR_FIREBASE = {json.dumps(firebase)};"
+    # OAuth client that lets the app read file names in Lucas's Google Drive (Repertório).
+    google_path = ROOT / "google.config.json"
+    if google_path.exists():
+        flags += f"\nwindow.HR_GOOGLE = {json.dumps(json.loads(google_path.read_text(encoding='utf-8')))};"
 
     html = f"""<!doctype html>
 <html lang="pt-BR">

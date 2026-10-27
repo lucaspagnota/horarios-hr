@@ -1,9 +1,0 @@
-rules_version = '2';
-// Arquivos do repertório: só a conta do Lucas lê e envia. Publique em Storage > Regras.
-service firebase.storage {
-  match /b/{bucket}/o {
-    match /{allPaths=**} {
-      allow read, write: if request.auth != null && request.auth.uid == "H4xCaTcaYGP2MYDmVBs6wgBPpG63";
-    }
-  }
-}
