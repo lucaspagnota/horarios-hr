@@ -1,9 +1,9 @@
 rules_version = '2';
-// Só a conta do Lucas lê e grava. Troque SEU_UID pelo UID que aparece em Authentication > Usuários.
+// Só a conta do Lucas (UID de Authentication > Usuários) lê e grava. Publique em Firestore > Regras.
 service cloud.firestore {
   match /databases/{database}/documents {
     match /{document=**} {
-      allow read, write: if request.auth != null && request.auth.uid == "SEU_UID";
+      allow read, write: if request.auth != null && request.auth.uid == "H4xCaTcaYGP2MYDmVBs6wgBPpG63";
     }
   }
 }
