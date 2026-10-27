@@ -32,3 +32,12 @@ npm install
 python3 scripts/build.py
 cd www && python3 -m http.server 8000
 ```
+
+## Logo e ícones
+
+A logo fica só em `app/horarios-hr.html` (a constante `LOGO` e as cores `--brand-*`). Para gerar de novo os ícones do site e do APK a partir dela:
+
+```bash
+npx playwright install chromium   # só na primeira vez
+npm run icons
+```

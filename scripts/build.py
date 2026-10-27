@@ -67,8 +67,13 @@ if ('serviceWorker' in navigator && location.protocol === 'https:' && !window.Ca
 """
     (WWW / "index.html").write_text(html, encoding="utf-8")
 
-    # Service worker cache name changes with every build so phones pick up new versions.
-    version = hashlib.sha1(html.encode("utf-8")).hexdigest()[:10]
+    # Service worker cache name changes whenever any published file changes (page, icons, manifest,
+    # Firebase scripts) so phones pick up new versions.
+    digest = hashlib.sha1()
+    for f in sorted(p for p in WWW.rglob("*") if p.is_file()):
+        digest.update(f.relative_to(WWW).as_posix().encode("utf-8"))
+        digest.update(f.read_bytes())
+    version = digest.hexdigest()[:10]
     sw = (ROOT / "web" / "sw.js").read_text(encoding="utf-8").replace("__VERSION__", version)
     (WWW / "sw.js").write_text(sw, encoding="utf-8")
     print(f"www/ pronto (versão {version}, Firebase {'ligado' if firebase else 'desligado'})")
