@@ -5,7 +5,7 @@
   "description": "App de horários de aula do Lucas: grade, alunos, recital e reposições.",
   "scripts": {
     "build": "python3 scripts/build.py",
-    "icons": "python3 scripts/make_icons.py"
+    "icons": "node scripts/make_icons.js"
   },
   "dependencies": {
     "firebase": "10.14.1"
