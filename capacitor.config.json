@@ -2,6 +2,10 @@
   "appId": "br.com.lucaspagnota.horarioshr",
   "appName": "Horários HR",
   "webDir": "www",
+  "server": {
+    "url": "https://lucaspagnota.github.io/horarios-hr/",
+    "errorPath": "index.html"
+  },
   "android": {
     "backgroundColor": "#F4F5F9"
   }
