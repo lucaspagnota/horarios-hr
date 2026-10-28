@@ -19,6 +19,8 @@ App das aulas de música do Lucas: grade da semana, fichas dos alunos (música a
 
 A cada `push` na `main`, o GitHub publica o site e gera um APK novo.
 
+O APK abre o próprio site (`server.url` em `capacitor.config.json`), então toda mudança publicada chega no celular sozinha, sem instalar de novo. Sem internet, ele abre a cópia do app que vem dentro do APK (`errorPath`). Só é preciso baixar um APK novo quando mudar algo do Android em si (ícone, nome, permissões).
+
 ## Dados
 
 - Com o arquivo `firebase.config.json` na raiz, o app pede login (e-mail e senha do Firebase Authentication) e guarda tudo no Cloud Firestore, sincronizado entre computador e celular.
